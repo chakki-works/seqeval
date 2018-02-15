@@ -109,5 +109,57 @@ def accuracy_score(y_true, y_pred, format='iob'):
     return score
 
 
+def precision_score(y_true, y_pred, average='micro', format='iob'):
+    """Compute the precision
+
+    The precision is the ratio ``tp / (tp + fp)`` where ``tp`` is the number of
+    true positives and ``fp`` the number of false positives. The precision is
+    intuitively the ability of the classifier not to label as positive a sample.
+
+    The best value is 1 and the worst value is 0.
+
+    Args:
+        y_true : 1d array. Ground truth (correct) target values.
+        y_pred : 1d array. Estimated targets as returned by a tagger.
+
+    Returns:
+        score : float.
+
+    Example:
+        >>> from seqeval.metrics import precision_score
+        >>> y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
+        >>> y_pred = ['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
+        >>> precision_score(y_true, y_pred)
+        0.50
+    """
+    pass
+
+
+def recall_score(y_true, y_pred, average='micro', format='iob'):
+    """Compute the recall
+
+    The recall is the ratio ``tp / (tp + fn)`` where ``tp`` is the number of
+    true positives and ``fn`` the number of false negatives. The recall is
+    intuitively the ability of the classifier to find all the positive samples.
+
+    The best value is 1 and the worst value is 0.
+
+    Args:
+        y_true : 1d array. Ground truth (correct) target values.
+        y_pred : 1d array. Estimated targets as returned by a tagger.
+
+    Returns:
+        score : float.
+
+    Example:
+        >>> from seqeval.metrics import recall_score
+        >>> y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
+        >>> y_pred = ['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
+        >>> recall_score(y_true, y_pred)
+        0.50
+    """
+    pass
+
+
 def classification_report(y_true, y_pred, format='iob'):
     pass
