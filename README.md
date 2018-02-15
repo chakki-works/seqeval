@@ -1,7 +1,8 @@
 # seqeval
 seqeval is a testing framework for sequence labeling.
+You can evaluate named-entity recognition, part-of-speech tagging, semantic role labeling and so on.
 
-seqeval supports following representations:
+seqeval supports following format:
 * IOB
 * IOBES
 
