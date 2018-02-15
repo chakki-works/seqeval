@@ -132,7 +132,15 @@ def precision_score(y_true, y_pred, average='micro', format='iob'):
         >>> precision_score(y_true, y_pred)
         0.50
     """
-    pass
+    true_entities = set(get_entities(y_true))
+    pred_entities = set(get_entities(y_pred))
+
+    nb_correct = len(true_entities & pred_entities)
+    nb_pred = len(pred_entities)
+
+    score = nb_correct / nb_pred if nb_pred > 0 else 0
+
+    return score
 
 
 def recall_score(y_true, y_pred, average='micro', format='iob'):
@@ -158,7 +166,15 @@ def recall_score(y_true, y_pred, average='micro', format='iob'):
         >>> recall_score(y_true, y_pred)
         0.50
     """
-    pass
+    true_entities = set(get_entities(y_true))
+    pred_entities = set(get_entities(y_pred))
+
+    nb_correct = len(true_entities & pred_entities)
+    nb_true = len(true_entities)
+
+    score = nb_correct / nb_true if nb_true > 0 else 0
+
+    return score
 
 
 def classification_report(y_true, y_pred, format='iob'):

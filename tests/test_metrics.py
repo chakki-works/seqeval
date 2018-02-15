@@ -1,6 +1,6 @@
 import unittest
 
-from seqeval.metrics import f1_score, accuracy_score, classification_report
+from seqeval.metrics import f1_score, accuracy_score, classification_report, precision_score, recall_score
 
 
 class TestMetrics(unittest.TestCase):
@@ -16,6 +16,14 @@ class TestMetrics(unittest.TestCase):
 
     def test_accuracy_score(self):
         score = accuracy_score(self.y_true, self.y_pred)
+        self.assertEqual(score, 0.5)
+
+    def test_precision_score(self):
+        score = precision_score(self.y_true, self.y_pred)
+        self.assertEqual(score, 0.5)
+
+    def test_recall_score(self):
+        score = recall_score(self.y_true, self.y_pred)
         self.assertEqual(score, 0.5)
 
     def test_classification_report(self):
