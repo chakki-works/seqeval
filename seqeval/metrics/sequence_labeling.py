@@ -162,4 +162,27 @@ def recall_score(y_true, y_pred, average='micro', format='iob'):
 
 
 def classification_report(y_true, y_pred, format='iob'):
-    pass
+    true_entities = set(get_entities(y_true))
+    pred_entities = set(get_entities(y_pred))
+
+    from collections import defaultdict
+    d1 = defaultdict(set)
+    d2 = defaultdict(set)
+    for e in true_entities:
+        d1[e[0]].add((e[1], e[2]))
+    for e in pred_entities:
+        d2[e[0]].add((e[1], e[2]))
+
+    for type_name, true_entities in d1.items():
+        pred_entities = d2[type_name]
+        nb_correct = len(true_entities & pred_entities)
+        nb_pred = len(pred_entities)
+        nb_true = len(true_entities)
+
+        p = nb_correct / nb_pred if nb_pred > 0 else 0
+        r = nb_correct / nb_true if nb_true > 0 else 0
+        score = 2 * p * r / (p + r) if p + r > 0 else 0
+        print('{}\t{}'.format(type_name, score))
+
+    # return score
+

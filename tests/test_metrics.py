@@ -19,4 +19,4 @@ class TestMetrics(unittest.TestCase):
         self.assertEqual(score, 0.5)
 
     def test_classification_report(self):
-        pass
+        classification_report(self.y_true, self.y_pred)
