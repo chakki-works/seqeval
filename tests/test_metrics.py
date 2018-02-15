@@ -1,8 +1,13 @@
+"""
+Evaluation test is performed for the following dataset.
+https://www.clips.uantwerpen.be/conll2000/chunking/output.html
+"""
 import os
 import unittest
 
 from seqeval.metrics import f1_score, accuracy_score, classification_report, precision_score, recall_score
 from seqeval.metrics.sequence_labeling import get_entities
+
 
 class TestMetrics(unittest.TestCase):
 
