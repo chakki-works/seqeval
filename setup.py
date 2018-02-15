@@ -22,9 +22,7 @@ if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist bdist_wheel upload')
     sys.exit()
 
-required = [
-
-]
+required = ['numpy>=1.14.0']
 
 setup(
     name=NAME,
