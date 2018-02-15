@@ -12,12 +12,17 @@ Behold, the power of seqeval:
 >>> from seqeval.metrics import f1_score, accuracy_score, classification_report
 >>> y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
 >>> y_pred = ['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
->>> f1_score(y_true, y_pred, average='micro', format='iob')
+>>> f1_score(y_true, y_pred)
 0.50
->>> accuracy_score(y_true, y_pred, format='iob')
+>>> accuracy_score(y_true, y_pred)
 0.50
->>> classification_report(y_true, y_pred, format='iob')
+>>> classification_report(y_true, y_pred)
+             precision    recall  f1-score   support
 
+       MISC       0.00      0.00      0.00         1
+        PER       1.00      1.00      1.00         1
+
+avg / total       0.50      0.50      0.50         2
 ```
 
 
