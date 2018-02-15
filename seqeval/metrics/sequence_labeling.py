@@ -7,6 +7,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from collections import defaultdict
+
 
 def get_entities(seq):
     """Gets entities from sequence.
@@ -18,25 +20,65 @@ def get_entities(seq):
         list: list of (chunk_type, chunk_start, chunk_end).
 
     Example:
+        >>> from seqeval.metrics.sequence_labeling import get_entities
         >>> seq = ['B-PER', 'I-PER', 'O', 'B-LOC']
         >>> get_entities(seq)
-        [('PER', 0, 2), ('LOC', 3, 4)]
+        [('PER', 0, 1), ('LOC', 3, 3)]
     """
-    i = 0
+    prev_tag = 'O'
+    prev_type = ''
+    begin_offset = 0
     chunks = []
-    seq = seq + ['O']  # add sentinel
-    types = [tag.split('-')[-1] for tag in seq]
-    while i < len(seq):
-        if seq[i].startswith('B'):
-            for j in range(i+1, len(seq)):
-                if seq[j].startswith('I') and types[j] == types[i]:
-                    continue
-                break
-            chunks.append((types[i], i, j))
-            i = j
-        else:
-            i += 1
+    for i, chunk in enumerate(seq + ['O']):
+        tag = chunk[0]
+        type_ = chunk.split('-')[-1]
+
+        if end_of_chunk(prev_tag, tag, prev_type, type_):
+            chunks.append((prev_type, begin_offset, i-1))
+        if start_of_chunk(prev_tag, tag, prev_type, type_):
+            begin_offset = i
+        prev_tag = tag
+        prev_type = type_
+
     return chunks
+
+
+def end_of_chunk(prev_tag, tag, prev_type, type_):
+    chunk_end = False
+
+    if prev_tag == 'E': chunk_end = True
+    if prev_tag == 'S': chunk_end = True
+
+    if prev_tag == 'B' and tag == 'B': chunk_end = True
+    if prev_tag == 'B' and tag == 'S': chunk_end = True
+    if prev_tag == 'B' and tag == 'O': chunk_end = True
+    if prev_tag == 'I' and tag == 'B': chunk_end = True
+    if prev_tag == 'I' and tag == 'S': chunk_end = True
+    if prev_tag == 'I' and tag == 'O': chunk_end = True
+
+    if prev_tag != 'O' and prev_tag != '.' and prev_type != type_:
+        chunk_end = True
+
+    return chunk_end
+
+
+def start_of_chunk(prev_tag, tag, prev_type, type_):
+    chunk_start = False
+
+    if tag == 'B': chunk_start = True
+    if tag == 'S': chunk_start = True
+
+    if prev_tag == 'E' and tag == 'E': chunk_start = True
+    if prev_tag == 'E' and tag == 'I': chunk_start = True
+    if prev_tag == 'S' and tag == 'E': chunk_start = True
+    if prev_tag == 'S' and tag == 'I': chunk_start = True
+    if prev_tag == 'O' and tag == 'E': chunk_start = True
+    if prev_tag == 'O' and tag == 'I': chunk_start = True
+
+    if tag != 'O' and tag != '.' and prev_type != type_:
+        chunk_start = True
+
+    return chunk_start
 
 
 def f1_score(y_true, y_pred, average='micro', format='iob'):
@@ -181,7 +223,6 @@ def classification_report(y_true, y_pred, format='iob'):
     true_entities = set(get_entities(y_true))
     pred_entities = set(get_entities(y_pred))
 
-    from collections import defaultdict
     d1 = defaultdict(set)
     d2 = defaultdict(set)
     for e in true_entities:
@@ -199,6 +240,3 @@ def classification_report(y_true, y_pred, format='iob'):
         r = nb_correct / nb_true if nb_true > 0 else 0
         score = 2 * p * r / (p + r) if p + r > 0 else 0
         print('{}\t{}'.format(type_name, score))
-
-    # return score
-

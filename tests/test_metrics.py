@@ -2,7 +2,7 @@ import os
 import unittest
 
 from seqeval.metrics import f1_score, accuracy_score, classification_report, precision_score, recall_score
-
+from seqeval.metrics.sequence_labeling import get_entities
 
 class TestMetrics(unittest.TestCase):
 
@@ -23,21 +23,25 @@ class TestMetrics(unittest.TestCase):
 
         return y_true, y_pred
 
+    def test_get_entities(self):
+        y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
+        print(get_entities(y_true))
+
     def test_f1_score(self):
         score = f1_score(self.y_true, self.y_pred)
-        self.assertEqual(score, 0.7435)
+        self.assertEqual(round(score, 4), 0.7435)
 
     def test_accuracy_score(self):
         score = accuracy_score(self.y_true, self.y_pred)
-        self.assertEqual(score, 0.8408)
+        self.assertEqual(round(score, 4), 0.8408)
 
     def test_precision_score(self):
         score = precision_score(self.y_true, self.y_pred)
-        self.assertEqual(score, 0.6883)
+        self.assertEqual(round(score, 4), 0.6883)
 
     def test_recall_score(self):
         score = recall_score(self.y_true, self.y_pred)
-        self.assertEqual(score, 0.8083)
+        self.assertEqual(round(score, 4), 0.8083)
 
     def test_classification_report(self):
         classification_report(self.y_true, self.y_pred)
