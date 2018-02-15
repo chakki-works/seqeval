@@ -63,19 +63,16 @@ def f1_score(y_true, y_pred, average='micro', format='iob'):
         >>> f1_score(y_true, y_pred)
         0.50
     """
-
-    correct_preds, total_correct, total_preds = 0., 0., 0.
-
     true_entities = set(get_entities(y_true))
     pred_entities = set(get_entities(y_pred))
 
-    correct_preds += len(true_entities & pred_entities)
-    total_preds += len(pred_entities)
-    total_correct += len(true_entities)
+    nb_correct = len(true_entities & pred_entities)
+    nb_pred = len(pred_entities)
+    nb_true = len(true_entities)
 
-    p = correct_preds / total_preds if correct_preds > 0 else 0
-    r = correct_preds / total_correct if correct_preds > 0 else 0
-    score = 2 * p * r / (p + r) if correct_preds > 0 else 0
+    p = nb_correct / nb_pred if nb_pred > 0 else 0
+    r = nb_correct / nb_true if nb_true > 0 else 0
+    score = 2 * p * r / (p + r) if p + r > 0 else 0
 
     return score
 
@@ -105,9 +102,9 @@ def accuracy_score(y_true, y_pred, format='iob'):
     pred_entities = set(get_entities(y_pred))
 
     nb_correct = len(true_entities & pred_entities)
-    nb_samples = len(true_entities)
+    nb_true = len(true_entities)
 
-    score = nb_correct / nb_samples
+    score = nb_correct / nb_true
 
     return score
 
