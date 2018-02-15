@@ -1,6 +1,10 @@
 # seqeval
 seqeval is a testing framework for sequence labeling.
 
+seqeval supports following representations:
+* IOB
+* IOBES
+
 ## How to use
 Behold, the power of seqeval:
 
