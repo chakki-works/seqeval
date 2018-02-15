@@ -26,7 +26,8 @@ class TestMetrics(unittest.TestCase):
     @classmethod
     def load_data(cls, file):
         with open(file) as f:
-            y = [line.rstrip() if line != '\n' else 'O' for line in f]
+            # y = [line.rstrip() if line != '\n' else 'O' for line in f]
+            y = [line.rstrip() for line in f if line != '\n']
 
         return y
 
