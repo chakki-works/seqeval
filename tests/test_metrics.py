@@ -44,4 +44,4 @@ class TestMetrics(unittest.TestCase):
         self.assertEqual(round(score, 4), 0.8083)
 
     def test_classification_report(self):
-        classification_report(self.y_true, self.y_pred)
+        print(classification_report(self.y_true, self.y_pred))
