@@ -83,7 +83,7 @@ def start_of_chunk(prev_tag, tag, prev_type, type_):
     return chunk_start
 
 
-def f1_score(y_true, y_pred, average='micro', format='iob'):
+def f1_score(y_true, y_pred, average='micro'):
     """Compute the F1 score.
 
     The F1 score can be interpreted as a weighted average of the precision and
@@ -121,7 +121,7 @@ def f1_score(y_true, y_pred, average='micro', format='iob'):
     return score
 
 
-def accuracy_score(y_true, y_pred, format='iob'):
+def accuracy_score(y_true, y_pred):
     """Accuracy classification score.
 
     In multilabel classification, this function computes subset accuracy:
@@ -153,7 +153,7 @@ def accuracy_score(y_true, y_pred, format='iob'):
     return score
 
 
-def precision_score(y_true, y_pred, average='micro', format='iob'):
+def precision_score(y_true, y_pred, average='micro'):
     """Compute the precision
 
     The precision is the ratio ``tp / (tp + fp)`` where ``tp`` is the number of
@@ -187,7 +187,7 @@ def precision_score(y_true, y_pred, average='micro', format='iob'):
     return score
 
 
-def recall_score(y_true, y_pred, average='micro', format='iob'):
+def recall_score(y_true, y_pred, average='micro'):
     """Compute the recall
 
     The recall is the ratio ``tp / (tp + fn)`` where ``tp`` is the number of
@@ -221,7 +221,7 @@ def recall_score(y_true, y_pred, average='micro', format='iob'):
     return score
 
 
-def classification_report(y_true, y_pred, digits=2, format='iob'):
+def classification_report(y_true, y_pred, digits=2):
     true_entities = set(get_entities(y_true))
     pred_entities = set(get_entities(y_pred))
 
