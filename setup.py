@@ -8,7 +8,7 @@ from setuptools import find_packages, setup
 
 # Package meta-data.
 NAME = 'seqeval'
-DESCRIPTION = 'Sequence labeling library'
+DESCRIPTION = 'Testing framework for sequence labeling'
 URL = 'https://github.com/chakki-works/seqeval'
 EMAIL = 'hiroki.nakayama.py@gmail.com'
 AUTHOR = 'Hironsan'
