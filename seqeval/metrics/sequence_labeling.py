@@ -54,14 +54,14 @@ def f1_score(y_true, y_pred, average='micro', format='iob'):
         y_pred : 1d array. Estimated targets as returned by a tagger.
 
     Returns:
-        f1_score : float.
+        score : float.
 
     Example:
         >>> from seqeval.metrics import f1_score
         >>> y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
         >>> y_pred = ['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
         >>> f1_score(y_true, y_pred)
-        0.50...
+        0.50
     """
 
     correct_preds, total_correct, total_preds = 0., 0., 0.
@@ -75,13 +75,41 @@ def f1_score(y_true, y_pred, average='micro', format='iob'):
 
     p = correct_preds / total_preds if correct_preds > 0 else 0
     r = correct_preds / total_correct if correct_preds > 0 else 0
-    f1 = 2 * p * r / (p + r) if correct_preds > 0 else 0
+    score = 2 * p * r / (p + r) if correct_preds > 0 else 0
 
-    return f1
+    return score
 
 
 def accuracy_score(y_true, y_pred, format='iob'):
-    pass
+    """Accuracy classification score.
+
+    In multilabel classification, this function computes subset accuracy:
+    the set of labels predicted for a sample must *exactly* match the
+    corresponding set of labels in y_true.
+
+    Args:
+        y_true : 1d array. Ground truth (correct) target values.
+        y_pred : 1d array. Estimated targets as returned by a tagger.
+
+    Returns:
+        score : float.
+
+    Example:
+        >>> from seqeval.metrics import accuracy_score
+        >>> y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
+        >>> y_pred = ['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
+        >>> accuracy_score(y_true, y_pred)
+        0.50
+    """
+    true_entities = set(get_entities(y_true))
+    pred_entities = set(get_entities(y_pred))
+
+    nb_correct = len(true_entities & pred_entities)
+    nb_samples = len(true_entities)
+
+    score = nb_correct / nb_samples
+
+    return score
 
 
 def classification_report(y_true, y_pred, format='iob'):

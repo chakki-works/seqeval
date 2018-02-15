@@ -16,7 +16,7 @@ class TestMetrics(unittest.TestCase):
 
     def test_accuracy_score(self):
         score = accuracy_score(self.y_true, self.y_pred)
-        self.assertEqual(score, 0.8)
+        self.assertEqual(score, 0.5)
 
     def test_classification_report(self):
         pass

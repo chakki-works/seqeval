@@ -15,7 +15,7 @@ Behold, the power of seqeval:
 >>> f1_score(y_true, y_pred, average='micro', format='iob')
 0.50
 >>> accuracy_score(y_true, y_pred, format='iob')
-0.80
+0.50
 >>> classification_report(y_true, y_pred, format='iob')
 
 ```
