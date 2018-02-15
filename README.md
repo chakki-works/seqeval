@@ -26,6 +26,14 @@ Behold, the power of seqeval:
 avg / total       0.50      0.50      0.50         2
 ```
 
+You can fed a nested list into the functions:
+
+```python
+>>> y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER']]
+>>> y_pred = [['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER']]
+>>> f1_score(y_true, y_pred)
+0.50
+```
 
 ## Install
 To install seqeval, simply run:
