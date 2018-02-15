@@ -1,17 +1,18 @@
-# namaco
-***namaco*** is a library for character-based Named Entity Recognition.
-namaco will especially focus on Japanese and Chinese named entity recognition.
+# seqeval
+seqeval is a testing framework for sequence labeling.
 
 ## How to use
+Behold, the power of seqeval:
 
 ```python
-from seqeval.metrics import f1_score
-from seqeval.metrics import accuracy_score
-from seqeval.metrics import classification_report
-
-f1_score(y_true, y_pred, average='micro', format='iob')
-accuracy_score(y_true, y_pred, format='iob')
-classification_report(y_true, y_pred, format='iob')
+>>> from seqeval.metrics import f1_score, accuracy_score, classification_report
+>>> y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
+>>> y_pred = ['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
+>>> f1_score(y_true, y_pred, average='micro', format='iob')
+0.50
+>>> accuracy_score(y_true, y_pred, format='iob')
+0.80
+>>> classification_report(y_true, y_pred, format='iob')
 
 ```
 
