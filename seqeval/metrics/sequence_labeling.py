@@ -27,6 +27,10 @@ def get_entities(seq):
         >>> get_entities(seq)
         [('PER', 0, 1), ('LOC', 3, 3)]
     """
+    # for nested list
+    if any(isinstance(s, list) for s in seq):
+        seq = [item for sublist in seq for item in sublist + ['O']]
+
     prev_tag = 'O'
     prev_type = ''
     begin_offset = 0
