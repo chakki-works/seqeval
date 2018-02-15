@@ -15,12 +15,8 @@ AUTHOR = 'Hironsan'
 LICENSE = 'MIT'
 
 here = os.path.abspath(os.path.dirname(__file__))
-with io.open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
+with io.open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = '\n' + f.read()
-
-about = {}
-with open(os.path.join(here, NAME, '__version__.py')) as f:
-    exec(f.read(), about)
 
 if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist bdist_wheel upload')
@@ -32,7 +28,7 @@ required = [
 
 setup(
     name=NAME,
-    version=about['__version__'],
+    version='0.0.1',
     description=DESCRIPTION,
     long_description=long_description,
     author=AUTHOR,
