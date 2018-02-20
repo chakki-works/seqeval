@@ -42,23 +42,24 @@ class TestMetrics(unittest.TestCase):
 
     def test_statistical_tests(self):
         filepath = 'eval_data.txt'
-        for i in range(10000):
-            print('Iteration: {}'.format(i))
-            self.generate_eval_data(filepath)
-            y_true, y_pred = self.load_labels(filepath)
-            with open(filepath) as f:
-                output = subprocess.check_output(['perl', 'conlleval.pl'], stdin=f).decode('utf-8')
-                acc_true, p_true, r_true, f1_true = self.parse_conlleval_output(output)
+        for prefix in ['BIO', 'EIO']:
+            for i in range(10000):
+                print('Iteration: {}'.format(i))
+                self.generate_eval_data(filepath, prefix)
+                y_true, y_pred = self.load_labels(filepath)
+                with open(filepath) as f:
+                    output = subprocess.check_output(['perl', 'conlleval.pl'], stdin=f).decode('utf-8')
+                    acc_true, p_true, r_true, f1_true = self.parse_conlleval_output(output)
 
-                acc_pred = accuracy_score(y_true, y_pred)
-                p_pred = precision_score(y_true, y_pred)
-                r_pred = recall_score(y_true, y_pred)
-                f1_pred = f1_score(y_true, y_pred)
+                    acc_pred = accuracy_score(y_true, y_pred)
+                    p_pred = precision_score(y_true, y_pred)
+                    r_pred = recall_score(y_true, y_pred)
+                    f1_pred = f1_score(y_true, y_pred)
 
-                self.assertLess(abs(acc_pred - acc_true), 1e-4)
-                self.assertLess(abs(p_pred - p_true), 1e-4)
-                self.assertLess(abs(r_pred - r_true), 1e-4)
-                self.assertLess(abs(f1_pred - f1_true), 1e-4)
+                    self.assertLess(abs(acc_pred - acc_true), 1e-4)
+                    self.assertLess(abs(p_pred - p_true), 1e-4)
+                    self.assertLess(abs(r_pred - r_true), 1e-4)
+                    self.assertLess(abs(f1_pred - f1_true), 1e-4)
 
         os.remove(filepath)
 
@@ -97,9 +98,8 @@ class TestMetrics(unittest.TestCase):
         return accuracy, precision, recall, f1
 
     @staticmethod
-    def generate_eval_data(filepath):
+    def generate_eval_data(filepath, prefixes='BIO'):
         types = ['PER', 'MISC', 'ORG', 'LOC']
-        prefixes = ['B', 'I', 'O']
         report = ''
         raw_fmt = '{} {} {} {}\n'
         for i in range(1000):
