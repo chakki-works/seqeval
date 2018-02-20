@@ -50,6 +50,17 @@ def get_entities(seq):
 
 
 def end_of_chunk(prev_tag, tag, prev_type, type_):
+    """Checks if a chunk ended between the previous and current word.
+
+    Args:
+        prev_tag: previous chunk tag.
+        tag: current chunk tag.
+        prev_type: previous type.
+        type_: current type.
+
+    Returns:
+        chunk_end: boolean.
+    """
     chunk_end = False
 
     if prev_tag == 'E': chunk_end = True
@@ -69,6 +80,17 @@ def end_of_chunk(prev_tag, tag, prev_type, type_):
 
 
 def start_of_chunk(prev_tag, tag, prev_type, type_):
+    """Checks if a chunk started between the previous and current word.
+
+    Args:
+        prev_tag: previous chunk tag.
+        tag: current chunk tag.
+        prev_type: previous type.
+        type_: current type.
+
+    Returns:
+        chunk_start: boolean.
+    """
     chunk_start = False
 
     if tag == 'B': chunk_start = True
@@ -159,7 +181,7 @@ def accuracy_score(y_true, y_pred):
 
 
 def precision_score(y_true, y_pred, average='micro'):
-    """Compute the precision
+    """Compute the precision.
 
     The precision is the ratio ``tp / (tp + fp)`` where ``tp`` is the number of
     true positives and ``fp`` the number of false positives. The precision is
@@ -193,7 +215,7 @@ def precision_score(y_true, y_pred, average='micro'):
 
 
 def recall_score(y_true, y_pred, average='micro'):
-    """Compute the recall
+    """Compute the recall.
 
     The recall is the ratio ``tp / (tp + fn)`` where ``tp`` is the number of
     true positives and ``fn`` the number of false negatives. The recall is
@@ -227,6 +249,29 @@ def recall_score(y_true, y_pred, average='micro'):
 
 
 def classification_report(y_true, y_pred, digits=2):
+    """Build a text report showing the main classification metrics.
+
+    Args:
+        y_true : 1d array-like. Ground truth (correct) target values.
+        y_pred : 1d array-like. Estimated targets as returned by a classifier.
+        digits : int. Number of digits for formatting output floating point values.
+
+    Returns:
+        report : string. Text summary of the precision, recall, F1 score for each class.
+
+    Examples:
+        >>> from seqeval.metrics import classification_report
+        >>> y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
+        >>> y_pred = [['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
+        >>> print(classification_report(y_true, y_pred))
+                     precision    recall  f1-score   support
+        <BLANKLINE>
+               MISC       0.00      0.00      0.00         1
+                PER       1.00      1.00      1.00         1
+        <BLANKLINE>
+        avg / total       0.50      0.50      0.50         2
+        <BLANKLINE>
+    """
     true_entities = set(get_entities(y_true))
     pred_entities = set(get_entities(y_pred))
 
