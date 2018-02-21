@@ -47,7 +47,7 @@ Behold, the power of seqeval:
 avg / total       0.50      0.50      0.50         2
 ```
 
-## Install
+## Installation
 To install seqeval, simply run:
 
 ```
