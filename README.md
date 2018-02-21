@@ -13,7 +13,7 @@ seqeval supports following formats:
 * IOE2
 * IOBES
 
-,and supports following metrics:
+and supports following metrics:
 
 | metrics  | description  |
 |---|---|
