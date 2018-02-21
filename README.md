@@ -27,9 +27,13 @@ seqeval supports following formats:
 Behold, the power of seqeval:
 
 ```python
->>> from seqeval.metrics import f1_score, accuracy_score, classification_report
+>>> from seqeval.metrics import accuracy_score
+>>> from seqeval.metrics import classification_report
+>>> from seqeval.metrics import f1_score
+>>> 
 >>> y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
 >>> y_pred = [['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
+>>>
 >>> f1_score(y_true, y_pred)
 0.50
 >>> accuracy_score(y_true, y_pred)
