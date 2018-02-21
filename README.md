@@ -1,7 +1,11 @@
 # seqeval
-seqeval is a testing framework for sequence labeling.
-You can evaluate named-entity recognition, part-of-speech tagging, semantic role labeling and so on.
+seqeval is a Python testing framework for sequence labeling.
+seqeval can measures the performance of chunking tasks such as named-entity recognition, part-of-speech tagging, semantic role labeling and so on.
 
+This is well-tested by using the Perl script [conlleval](https://www.clips.uantwerpen.be/conll2002/ner/bin/conlleval.txt),
+which can be used for measuring the performance of a system that has processed the CoNLL-2000 shared task data.
+
+## Support features
 seqeval supports following formats:
 * IOB1
 * IOB2
@@ -9,7 +13,17 @@ seqeval supports following formats:
 * IOE2
 * IOBES
 
-## How to use
+,and supports following metrics:
+
+| metrics  | description  |
+|---|---|
+| accuracy_score(y\_true, y\_pred)  | Compute the accuracy.  |
+| precision_score(y\_true, y\_pred)  | Compute the precision.  |
+| recall_score(y\_true, y\_pred)  | Compute the recall.  |
+| f1_score(y\_true, y\_pred)  | Compute the F1 score, also known as balanced F-score or F-measure.  |
+| classification_report(y\_true, y\_pred, digits)  | Build a text report showing the main classification metrics.  |
+
+## Usage
 Behold, the power of seqeval:
 
 ```python
@@ -35,3 +49,6 @@ To install seqeval, simply run:
 ```
 $ pip install seqeval
 ```
+
+## Requirement
+* numpy >= 1.14.0
