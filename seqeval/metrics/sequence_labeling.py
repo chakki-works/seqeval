@@ -120,16 +120,16 @@ def f1_score(y_true, y_pred, average='micro'):
         F1 = 2 * (precision * recall) / (precision + recall)
 
     Args:
-        y_true : 1d array. Ground truth (correct) target values.
-        y_pred : 1d array. Estimated targets as returned by a tagger.
+        y_true : 2d array. Ground truth (correct) target values.
+        y_pred : 2d array. Estimated targets as returned by a tagger.
 
     Returns:
         score : float.
 
     Example:
         >>> from seqeval.metrics import f1_score
-        >>> y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
-        >>> y_pred = ['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
+        >>> y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
+        >>> y_pred = [['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
         >>> f1_score(y_true, y_pred)
         0.50
     """
@@ -155,16 +155,16 @@ def accuracy_score(y_true, y_pred):
     corresponding set of labels in y_true.
 
     Args:
-        y_true : 1d array. Ground truth (correct) target values.
-        y_pred : 1d array. Estimated targets as returned by a tagger.
+        y_true : 2d array. Ground truth (correct) target values.
+        y_pred : 2d array. Estimated targets as returned by a tagger.
 
     Returns:
         score : float.
 
     Example:
         >>> from seqeval.metrics import accuracy_score
-        >>> y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
-        >>> y_pred = ['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
+        >>> y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
+        >>> y_pred = [['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
         >>> accuracy_score(y_true, y_pred)
         0.80
     """
@@ -190,16 +190,16 @@ def precision_score(y_true, y_pred, average='micro'):
     The best value is 1 and the worst value is 0.
 
     Args:
-        y_true : 1d array. Ground truth (correct) target values.
-        y_pred : 1d array. Estimated targets as returned by a tagger.
+        y_true : 2d array. Ground truth (correct) target values.
+        y_pred : 2d array. Estimated targets as returned by a tagger.
 
     Returns:
         score : float.
 
     Example:
         >>> from seqeval.metrics import precision_score
-        >>> y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
-        >>> y_pred = ['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
+        >>> y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
+        >>> y_pred = [['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
         >>> precision_score(y_true, y_pred)
         0.50
     """
@@ -224,16 +224,16 @@ def recall_score(y_true, y_pred, average='micro'):
     The best value is 1 and the worst value is 0.
 
     Args:
-        y_true : 1d array. Ground truth (correct) target values.
-        y_pred : 1d array. Estimated targets as returned by a tagger.
+        y_true : 2d array. Ground truth (correct) target values.
+        y_pred : 2d array. Estimated targets as returned by a tagger.
 
     Returns:
         score : float.
 
     Example:
         >>> from seqeval.metrics import recall_score
-        >>> y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
-        >>> y_pred = ['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
+        >>> y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
+        >>> y_pred = [['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
         >>> recall_score(y_true, y_pred)
         0.50
     """
@@ -252,8 +252,8 @@ def classification_report(y_true, y_pred, digits=2):
     """Build a text report showing the main classification metrics.
 
     Args:
-        y_true : 1d array-like. Ground truth (correct) target values.
-        y_pred : 1d array-like. Estimated targets as returned by a classifier.
+        y_true : 2d array. Ground truth (correct) target values.
+        y_pred : 2d array. Estimated targets as returned by a classifier.
         digits : int. Number of digits for formatting output floating point values.
 
     Returns:
