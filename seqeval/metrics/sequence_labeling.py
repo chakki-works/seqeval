@@ -12,7 +12,7 @@ from collections import defaultdict
 import numpy as np
 
 
-def get_entities(seq):
+def get_entities(seq, suffix=False):
     """Gets entities from sequence.
 
     Args:
@@ -36,8 +36,12 @@ def get_entities(seq):
     begin_offset = 0
     chunks = []
     for i, chunk in enumerate(seq + ['O']):
-        tag = chunk[0]
-        type_ = chunk.split('-')[-1]
+        if suffix:
+            tag = chunk[-1]
+            type_ = chunk.split('-')[0]
+        else:
+            tag = chunk[0]
+            type_ = chunk.split('-')[-1]
 
         if end_of_chunk(prev_tag, tag, prev_type, type_):
             chunks.append((prev_type, begin_offset, i-1))
