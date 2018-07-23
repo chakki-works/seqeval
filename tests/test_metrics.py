@@ -22,6 +22,10 @@ class TestMetrics(unittest.TestCase):
         y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
         self.assertEqual(get_entities(y_true), [('MISC', 3, 5), ('PER', 7, 8)])
 
+    def test_get_entities_with_suffix_style(self):
+        y_true = ['O', 'O', 'O', 'MISC-B', 'MISC-I', 'MISC-I', 'O', 'PER-B', 'PER-I']
+        self.assertEqual(get_entities(y_true, suffix=True), [('MISC', 3, 5), ('PER', 7, 8)])
+
     def test_classification_report(self):
         print(classification_report(self.y_true, self.y_pred))
 
