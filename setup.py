@@ -26,7 +26,7 @@ required = ['numpy>=1.14.0']
 
 setup(
     name=NAME,
-    version='0.0.3',
+    version='0.0.4',
     description=DESCRIPTION,
     long_description=long_description,
     author=AUTHOR,
