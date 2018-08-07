@@ -113,7 +113,7 @@ def start_of_chunk(prev_tag, tag, prev_type, type_):
     return chunk_start
 
 
-def f1_score(y_true, y_pred, average='micro'):
+def f1_score(y_true, y_pred, average='micro', suffix=False):
     """Compute the F1 score.
 
     The F1 score can be interpreted as a weighted average of the precision and
@@ -137,8 +137,8 @@ def f1_score(y_true, y_pred, average='micro'):
         >>> f1_score(y_true, y_pred)
         0.50
     """
-    true_entities = set(get_entities(y_true))
-    pred_entities = set(get_entities(y_pred))
+    true_entities = set(get_entities(y_true, suffix))
+    pred_entities = set(get_entities(y_pred, suffix))
 
     nb_correct = len(true_entities & pred_entities)
     nb_pred = len(pred_entities)
@@ -184,7 +184,7 @@ def accuracy_score(y_true, y_pred):
     return score
 
 
-def precision_score(y_true, y_pred, average='micro'):
+def precision_score(y_true, y_pred, average='micro', suffix=False):
     """Compute the precision.
 
     The precision is the ratio ``tp / (tp + fp)`` where ``tp`` is the number of
@@ -207,8 +207,8 @@ def precision_score(y_true, y_pred, average='micro'):
         >>> precision_score(y_true, y_pred)
         0.50
     """
-    true_entities = set(get_entities(y_true))
-    pred_entities = set(get_entities(y_pred))
+    true_entities = set(get_entities(y_true, suffix))
+    pred_entities = set(get_entities(y_pred, suffix))
 
     nb_correct = len(true_entities & pred_entities)
     nb_pred = len(pred_entities)
@@ -218,7 +218,7 @@ def precision_score(y_true, y_pred, average='micro'):
     return score
 
 
-def recall_score(y_true, y_pred, average='micro'):
+def recall_score(y_true, y_pred, average='micro', suffix=False):
     """Compute the recall.
 
     The recall is the ratio ``tp / (tp + fn)`` where ``tp`` is the number of
@@ -241,8 +241,8 @@ def recall_score(y_true, y_pred, average='micro'):
         >>> recall_score(y_true, y_pred)
         0.50
     """
-    true_entities = set(get_entities(y_true))
-    pred_entities = set(get_entities(y_pred))
+    true_entities = set(get_entities(y_true, suffix))
+    pred_entities = set(get_entities(y_pred, suffix))
 
     nb_correct = len(true_entities & pred_entities)
     nb_true = len(true_entities)
@@ -252,7 +252,7 @@ def recall_score(y_true, y_pred, average='micro'):
     return score
 
 
-def classification_report(y_true, y_pred, digits=2):
+def classification_report(y_true, y_pred, digits=2, suffix=False):
     """Build a text report showing the main classification metrics.
 
     Args:
@@ -276,8 +276,8 @@ def classification_report(y_true, y_pred, digits=2):
         avg / total       0.50      0.50      0.50         2
         <BLANKLINE>
     """
-    true_entities = set(get_entities(y_true))
-    pred_entities = set(get_entities(y_pred))
+    true_entities = set(get_entities(y_true, suffix))
+    pred_entities = set(get_entities(y_pred, suffix))
 
     name_width = 0
     d1 = defaultdict(set)

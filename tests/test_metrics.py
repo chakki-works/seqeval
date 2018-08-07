@@ -17,6 +17,8 @@ class TestMetrics(unittest.TestCase):
     def setUpClass(cls):
         cls.file_name = os.path.join(os.path.dirname(__file__), 'data/ground_truth.txt')
         cls.y_true, cls.y_pred = cls.load_labels(cls, cls.file_name)
+        cls.inv_file_name = os.path.join(os.path.dirname(__file__), 'data/ground_truth_inv.txt')
+        cls.y_true_inv, cls.y_pred_inv = cls.load_labels(cls, cls.inv_file_name)
 
     def test_get_entities(self):
         y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
@@ -28,6 +30,9 @@ class TestMetrics(unittest.TestCase):
 
     def test_classification_report(self):
         print(classification_report(self.y_true, self.y_pred))
+
+    def test_inv_classification_report(self):
+        print(classification_report(self.y_true_inv, self.y_pred_inv, suffix=True))
 
     def test_by_ground_truth(self):
         with open(self.file_name) as f:
@@ -43,6 +48,23 @@ class TestMetrics(unittest.TestCase):
             self.assertLess(abs(p_pred - p_true), 1e-4)
             self.assertLess(abs(r_pred - r_true), 1e-4)
             self.assertLess(abs(f1_pred - f1_true), 1e-4)
+
+    def test_metrics_for_inv_data(self):
+        with open(self.file_name) as f:
+            acc_pred = accuracy_score(self.y_true, self.y_pred)
+            p_pred = precision_score(self.y_true, self.y_pred)
+            r_pred = recall_score(self.y_true, self.y_pred)
+            f1_pred = f1_score(self.y_true, self.y_pred)
+
+            acc_pred_inv = accuracy_score(self.y_true_inv, self.y_pred_inv)
+            p_pred_inv = precision_score(self.y_true_inv, self.y_pred_inv, suffix=True)
+            r_pred_inv = recall_score(self.y_true_inv, self.y_pred_inv, suffix=True)
+            f1_pred_inv = f1_score(self.y_true_inv, self.y_pred_inv, suffix=True)
+
+            self.assertLess(abs(acc_pred - acc_pred_inv), 1e-4)
+            self.assertLess(abs(p_pred - p_pred_inv), 1e-4)
+            self.assertLess(abs(r_pred - r_pred_inv), 1e-4)
+            self.assertLess(abs(f1_pred - f1_pred_inv), 1e-4)
 
     def test_statistical_tests(self):
         filepath = 'eval_data.txt'
