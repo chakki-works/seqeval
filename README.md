@@ -21,7 +21,7 @@ and supports following metrics:
 | precision_score(y\_true, y\_pred)  | Compute the precision.  |
 | recall_score(y\_true, y\_pred)  | Compute the recall.  |
 | f1_score(y\_true, y\_pred)  | Compute the F1 score, also known as balanced F-score or F-measure.  |
-| classification_report(y\_true, y\_pred, digits)  | Build a text report showing the main classification metrics.  |
+| classification_report(y\_true, y\_pred, digits=2)  | Build a text report showing the main classification metrics. `digits` is number of digits for formatting output floating point values. Default value is `2`. |
 
 ## Usage
 Behold, the power of seqeval:
