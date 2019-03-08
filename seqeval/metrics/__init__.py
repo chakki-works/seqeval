@@ -3,3 +3,4 @@ from seqeval.metrics.sequence_labeling import classification_report
 from seqeval.metrics.sequence_labeling import f1_score
 from seqeval.metrics.sequence_labeling import precision_score
 from seqeval.metrics.sequence_labeling import recall_score
+from seqeval.metrics.sequence_labeling import performance_measure

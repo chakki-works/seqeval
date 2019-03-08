@@ -7,7 +7,9 @@ import random
 import subprocess
 import unittest
 
-from seqeval.metrics import f1_score, accuracy_score, classification_report, precision_score, recall_score
+from seqeval.metrics import (f1_score, accuracy_score, classification_report,
+                             precision_score, recall_score,
+                             performance_measure)
 from seqeval.metrics.sequence_labeling import get_entities
 
 
@@ -27,6 +29,13 @@ class TestMetrics(unittest.TestCase):
     def test_get_entities_with_suffix_style(self):
         y_true = ['O', 'O', 'O', 'MISC-B', 'MISC-I', 'MISC-I', 'O', 'PER-B', 'PER-I']
         self.assertEqual(get_entities(y_true, suffix=True), [('MISC', 3, 5), ('PER', 7, 8)])
+
+    def test_performance_measure(self):
+        y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'O', 'B-ORG'], ['B-PER', 'I-PER', 'O']]
+        y_pred = [['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'O'], ['B-PER', 'I-PER', 'O']]
+        performance_dict = performance_measure(y_true, y_pred)
+        self.assertDictEqual(performance_dict, {
+                             'FN': 1, 'FP': 3, 'TN': 4, 'TP': 3})
 
     def test_classification_report(self):
         print(classification_report(self.y_true, self.y_pred))
