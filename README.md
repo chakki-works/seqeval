@@ -47,6 +47,18 @@ Behold, the power of seqeval:
 avg / total       0.50      0.50      0.50         2
 ```
 
+### Keras Callback
+
+Seqeval provides a callback for Keras:
+
+```python
+from seqeval.callbacks import F1Metrics
+
+id2label = {0: '<PAD>', 1: 'B-LOC', 2: 'I-LOC'}
+callbacks = [F1Metrics(id2label)]
+model.fit(x, y, validation_data=(x_val, y_val), callbacks=callbacks)
+```
+
 ## Installation
 To install seqeval, simply run:
 
