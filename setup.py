@@ -22,11 +22,11 @@ if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist bdist_wheel upload')
     sys.exit()
 
-required = ['numpy>=1.14.0', 'Keras>=2.2.4']
+required = ['numpy>=1.14.0', 'Keras>=2.2.4', 'tensorflow>=1.13.1']
 
 setup(
     name=NAME,
-    version='0.0.7',
+    version='0.0.8',
     description=DESCRIPTION,
     long_description=long_description,
     author=AUTHOR,
