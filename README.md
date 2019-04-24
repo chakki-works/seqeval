@@ -63,7 +63,13 @@ model.fit(x, y, validation_data=(x_val, y_val), callbacks=callbacks)
 To install seqeval, simply run:
 
 ```
-$ pip install seqeval
+$ pip install seqeval[cpu]
+```
+
+If you want to install seqeval on GPU environment, please run:
+
+```bash
+$ pip install seqeval[gpu]
 ```
 
 ## Requirement
