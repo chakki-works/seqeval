@@ -306,7 +306,8 @@ def classification_report(y_true, y_pred, digits=2, suffix=False):
                MISC       0.00      0.00      0.00         1
                 PER       1.00      1.00      1.00         1
         <BLANKLINE>
-        avg / total       0.50      0.50      0.50         2
+          micro avg       0.50      0.50      0.50         2
+          macro avg       0.50      0.50      0.50         2
         <BLANKLINE>
     """
     true_entities = set(get_entities(y_true, suffix))
@@ -321,7 +322,7 @@ def classification_report(y_true, y_pred, digits=2, suffix=False):
     for e in pred_entities:
         d2[e[0]].add((e[1], e[2]))
 
-    last_line_heading = 'avg / total'
+    last_line_heading = 'macro avg'
     width = max(name_width, len(last_line_heading), digits)
 
     headers = ["precision", "recall", "f1-score", "support"]
@@ -352,6 +353,12 @@ def classification_report(y_true, y_pred, digits=2, suffix=False):
     report += u'\n'
 
     # compute averages
+    report += row_fmt.format('micro avg',
+                             precision_score(y_true, y_pred, suffix=suffix),
+                             recall_score(y_true, y_pred, suffix=suffix),
+                             f1_score(y_true, y_pred, suffix=suffix),
+                             np.sum(s),
+                             width=width, digits=digits)
     report += row_fmt.format(last_line_heading,
                              np.average(ps, weights=s),
                              np.average(rs, weights=s),

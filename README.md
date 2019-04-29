@@ -44,7 +44,8 @@ Behold, the power of seqeval:
        MISC       0.00      0.00      0.00         1
         PER       1.00      1.00      1.00         1
 
-avg / total       0.50      0.50      0.50         2
+  micro avg       0.50      0.50      0.50         2
+  macro avg       0.50      0.50      0.50         2
 ```
 
 ### Keras Callback

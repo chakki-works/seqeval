@@ -26,7 +26,7 @@ required = ['numpy>=1.14.0', 'Keras>=2.2.4']
 
 setup(
     name=NAME,
-    version='0.0.9',
+    version='0.0.10',
     description=DESCRIPTION,
     long_description=long_description,
     author=AUTHOR,
