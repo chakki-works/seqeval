@@ -18,69 +18,26 @@ class F1Metrics(Callback):
         self.validation_data = validation_data
         self.is_fit = validation_data is None
 
-    def find_pad_index(self, array):
-        """Find padding index.
-
-        Args:
-            array (list): integer list.
-
-        Returns:
-            idx: padding index.
-
-        Examples:
-             >>> array = [1, 2, 0]
-             >>> self.find_pad_index(array)
-             2
-        """
-        try:
-            return list(array).index(self.pad_value)
-        except ValueError:
-            return len(array)
-
-    def get_length(self, y):
-        """Get true length of y.
-
-        Args:
-            y (list): padded list.
-
-        Returns:
-            lens: true length of y.
-
-        Examples:
-            >>> y = [[1, 0, 0], [1, 1, 0], [1, 1, 1]]
-            >>> self.get_length(y)
-            [1, 2, 3]
-        """
-        lens = [self.find_pad_index(row) for row in y]
-        return lens
-
-    def convert_idx_to_name(self, y, lens):
+    def convert_idx_to_name(self, y, array_indexes):
         """Convert label index to name.
 
         Args:
-            y (list): label index list.
-            lens (list): true length of y.
+            y (np.ndarray): label index 2d array.
+            array_indexes (list): list of valid index arrays for each row.
 
         Returns:
             y: label name list.
-
-        Examples:
-            >>> # assumes that id2label = {1: 'B-LOC', 2: 'I-LOC'}
-            >>> y = [[1, 0, 0], [1, 2, 0], [1, 1, 1]]
-            >>> lens = [1, 2, 3]
-            >>> self.convert_idx_to_name(y, lens)
-            [['B-LOC'], ['B-LOC', 'I-LOC'], ['B-LOC', 'B-LOC', 'B-LOC']]
         """
-        y = [[self.id2label[idx] for idx in row[:l]]
-             for row, l in zip(y, lens)]
+        y = [[self.id2label[idx] for idx in row[row_indexes]] for
+             row, row_indexes in zip(y, array_indexes)]
         return y
 
     def predict(self, X, y):
         """Predict sequences.
 
         Args:
-            X (list): input data.
-            y (list): tags.
+            X (np.ndarray): input data.
+            y (np.ndarray): tags.
 
         Returns:
             y_true: true sequences.
@@ -92,10 +49,10 @@ class F1Metrics(Callback):
         y_true = np.argmax(y, -1)
         y_pred = np.argmax(y_pred, -1)
 
-        lens = self.get_length(y_true)
+        non_pad_indexes = [np.nonzero(y_true_row != self.pad_value)[0] for y_true_row in y_true]
 
-        y_true = self.convert_idx_to_name(y_true, lens)
-        y_pred = self.convert_idx_to_name(y_pred, lens)
+        y_true = self.convert_idx_to_name(y_true, non_pad_indexes)
+        y_pred = self.convert_idx_to_name(y_pred, non_pad_indexes)
 
         return y_true, y_pred
 
