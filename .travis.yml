@@ -9,7 +9,7 @@ install:
 script: true
 
 deploy:
-  - provider: script
-    script: scripts/cd.sh
-    on:
-      tags: true
+  provider: script
+  script: chmod +x scripts/cd.sh && scripts/cd.sh
+  on:
+    tags: true
