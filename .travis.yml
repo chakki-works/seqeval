@@ -6,9 +6,9 @@ python:
 install:
   - sudo apt-get -y install pandoc
   - pip install pypandoc
-  - chmod 777 replace_version.sh
 
-script: true
+script:
+  - bash replace_version.sh
 
 deploy:
   provider: pypi
