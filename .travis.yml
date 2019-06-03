@@ -1,18 +1,11 @@
 language: python
-
 python:
 - '3.6'
-
-install:
-  - pip install wheel twine
-
 script: true
-
 deploy:
-  provider: script
-  script:
-    - ls
-    - pwd
-    - sh scripts/cd.sh
+  provider: pypi
+  user: Hironsan
+  password:
+    secure: sSlaumVPqaoaadCG3vLEDzQyU0+EbULN381B0Rm7t6RM1bscSdDBJlaloO1myCE+rKkYweU0mkjM315VJp+51KdrAP1uXV104iR7IH+CIVIrqxfL09IW4TJ3G5GuzEQ4P1qpKpLpPLdFYsYftghCLKpx41K7ofib5+dCFaFR3BS7gEN+yLlSqqEDQBhlY5vx4IxyX/j9vVsk8C6envszRTw/2+zKxLpq+54pllooLNJFgiW0DHu/SGObWkkaHbTDYppvxiP03kWoheKpkwAJY2VJ+uzRZhMVfZXycWEeh34eCL9y5/nFQ1I7L5TM5n92PP4p5POvIJZay7GUk8UFK4nluqWWBxTqrxmNKMUbaaFsi8nlK/aCy5F5PbBKEacw7hfyx27Gu93DB26IzHMKu/6RzP5xXte9V6PSUC7lUCGCxy5HvfmpFFr6S4mPj1+comUQ3NbtI5bqI0tbu10OQg6XueT15T2MVSZXlEExnQrvjGDpienpbd2BWbVEtjz7wDs6dwMrzy/ZBwSe48z7B7lAp1TxmSb0ePtWUdgTgQjl8vyum+n3bCUC4GJFwA7Nu/UvvtW/q4eJ6XVaGChuTirTuIb1sHEErJqCVJSr3CxaKqqKIAeONuoFbybe/vou/+yeew1DA0eLguFEgeHsvL9KhYiQ5zCM5sNtymybBIQ=
   on:
     tags: true
