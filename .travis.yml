@@ -10,6 +10,9 @@ script: true
 
 deploy:
   provider: script
-  script: sh scripts/cd.sh
+  script:
+    - ls
+    - pwd
+    - sh scripts/cd.sh
   on:
     tags: true
