@@ -1,3 +1,7 @@
+language: minimal
+
+script: true
+
 deploy:
   provider: pypi
   user: Hironsan
