@@ -10,6 +10,6 @@ script: true
 
 deploy:
   provider: script
-  script: chmod +x scripts/cd.sh && scripts/cd.sh
+  script: sh scripts/cd.sh
   on:
     tags: true
