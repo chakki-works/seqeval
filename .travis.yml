@@ -4,6 +4,7 @@ python:
 - '3.6'
 
 install:
+  - sudo apt-get -y install pandoc
   - pip install pypandoc
 
 script: true
