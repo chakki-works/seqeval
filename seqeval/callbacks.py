@@ -5,17 +5,20 @@ from seqeval.metrics import f1_score, classification_report
 
 class F1Metrics(Callback):
 
-    def __init__(self, id2label, pad_value=0, validation_data=None):
+    def __init__(self, id2label, pad_value=0, validation_data=None, digits=4):
         """
         Args:
             id2label (dict): id to label mapping.
             (e.g. {1: 'B-LOC', 2: 'I-LOC'})
             pad_value (int): padding value.
+            digits (int or None): number of digits in printed classification report
+              (use None to print only F1 score without a report).
         """
         super(F1Metrics, self).__init__()
         self.id2label = id2label
         self.pad_value = pad_value
         self.validation_data = validation_data
+        self.digits = digits
         self.is_fit = validation_data is None
 
     def find_pad_index(self, array):
@@ -111,7 +114,8 @@ class F1Metrics(Callback):
         """
         score = f1_score(y_true, y_pred)
         print(' - f1: {:04.2f}'.format(score * 100))
-        print(classification_report(y_true, y_pred, digits=4))
+        if self.digits:
+            print(classification_report(y_true, y_pred, digits=self.digits))
         return score
 
     def on_epoch_end(self, epoch, logs={}):
