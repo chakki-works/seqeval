@@ -5,11 +5,6 @@ import os
 import sys
 
 from setuptools import find_packages, setup
-from pypandoc import convert
-
-
-def convert_markdown_to_rst(file):
-      return convert(file, 'rst')
 
 
 # Package meta-data.
@@ -32,9 +27,11 @@ required = ['numpy>=1.14.0', 'Keras>=2.2.4']
 
 setup(
     name=NAME,
-    version='NEWVERSIONHERE',
+    use_scm_version=True,
+    setup_requires=['setuptools_scm'],
     description=DESCRIPTION,
-    long_description=convert_markdown_to_rst('README.md'),
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     author=AUTHOR,
     author_email=EMAIL,
     url=URL,
