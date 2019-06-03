@@ -74,4 +74,6 @@ $ pip install seqeval[gpu]
 ```
 
 ## Requirement
+
 * numpy >= 1.14.0
+* tensorflow(optional)
