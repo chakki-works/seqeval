@@ -5,6 +5,12 @@ import os
 import sys
 
 from setuptools import find_packages, setup
+from pypandoc import convert
+
+
+def convert_markdown_to_rst(file):
+      return convert(file, 'rst')
+
 
 # Package meta-data.
 NAME = 'seqeval'
@@ -28,7 +34,7 @@ setup(
     name=NAME,
     version='0.0.10',
     description=DESCRIPTION,
-    long_description=long_description,
+    long_description=convert_markdown_to_rst('README.md'),
     author=AUTHOR,
     author_email=EMAIL,
     url=URL,

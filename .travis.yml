@@ -1,8 +1,12 @@
 language: python
 
 python:
-- '3.5'
 - '3.6'
+
+install:
+  - sudo apt-get -y install pandoc
+  - pip install pypandoc
+  - python setup.py develop
 
 script: true
 
