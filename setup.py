@@ -32,7 +32,7 @@ required = ['numpy>=1.14.0', 'Keras>=2.2.4']
 
 setup(
     name=NAME,
-    version='0.0.10',
+    version='NEWVERSIONHERE',
     description=DESCRIPTION,
     long_description=convert_markdown_to_rst('README.md'),
     author=AUTHOR,
