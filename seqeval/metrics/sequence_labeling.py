@@ -285,13 +285,14 @@ def performance_measure(y_true, y_pred):
     return performace_dict
 
 
-def classification_report(y_true, y_pred, digits=2, suffix=False):
+def classification_report(y_true, y_pred, digits=2, suffix=False, title=""):
     """Build a text report showing the main classification metrics.
 
     Args:
         y_true : 2d array. Ground truth (correct) target values.
         y_pred : 2d array. Estimated targets as returned by a classifier.
         digits : int. Number of digits for formatting output floating point values.
+        title  : string. Title to be placed in the upper left of the report.
 
     Returns:
         report : string. Text summary of the precision, recall, F1 score for each class.
@@ -313,7 +314,7 @@ def classification_report(y_true, y_pred, digits=2, suffix=False):
     true_entities = set(get_entities(y_true, suffix))
     pred_entities = set(get_entities(y_pred, suffix))
 
-    name_width = 0
+    name_width = len(title)
     d1 = defaultdict(set)
     d2 = defaultdict(set)
     for e in true_entities:
@@ -327,7 +328,7 @@ def classification_report(y_true, y_pred, digits=2, suffix=False):
 
     headers = ["precision", "recall", "f1-score", "support"]
     head_fmt = u'{:>{width}s} ' + u' {:>9}' * len(headers)
-    report = head_fmt.format(u'', *headers, width=width)
+    report = head_fmt.format(title, *headers, width=width)
     report += u'\n\n'
 
     row_fmt = u'{:>{width}s} ' + u' {:>9.{digits}f}' * 3 + u' {:>9}\n'

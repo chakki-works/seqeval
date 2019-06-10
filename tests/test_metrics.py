@@ -2,13 +2,14 @@
 Evaluation test is performed for the following dataset.
 https://www.clips.uantwerpen.be/conll2000/chunking/output.html
 """
+import itertools
 import os
 import random
 import subprocess
 import unittest
 
 import numpy
-from keras import Sequential
+from keras import Sequential, Input, Model
 from keras.backend import constant
 from keras.layers import Lambda
 from keras.preprocessing.sequence import pad_sequences
@@ -107,42 +108,107 @@ class TestMetrics(unittest.TestCase):
 
         os.remove(filepath)
 
-    def test_keras_callback(self):
-        expected_score = f1_score(self.y_true, self.y_pred)
+    @staticmethod
+    def keras_categorical(y, padding, tokenizer, maxlen):
+        indexes = tokenizer.texts_to_sequences(y)
+        padded = pad_sequences(indexes, maxlen=maxlen, padding=padding, truncating=padding)
+        categorical = to_categorical(padded)
+        return categorical
+
+    def keras_tokenizer_maxlen(self):
         tokenizer = Tokenizer(lower=False)
         tokenizer.fit_on_texts(self.y_true)
         maxlen = max((len(row) for row in self.y_true))
+        return tokenizer, maxlen
 
-        def prepare(y, padding):
-            indexes = tokenizer.texts_to_sequences(y)
-            padded = pad_sequences(indexes, maxlen=maxlen, padding=padding, truncating=padding)
-            categorical = to_categorical(padded)
-            return categorical
+    def test_keras_callback(self):
+        expected_score = f1_score(self.y_true, self.y_pred)
+        tokenizer, maxlen = self.keras_tokenizer_maxlen()
 
         for padding in ('pre', 'post'):
             callback = F1Metrics(id2label=tokenizer.index_word)
-            y_true_cat = prepare(self.y_true, padding)
-            y_pred_cat = prepare(self.y_pred, padding)
+            y_true_cat = self.keras_categorical(self.y_true, padding, tokenizer, maxlen)
+            y_pred_cat = self.keras_categorical(self.y_pred, padding, tokenizer, maxlen)
 
             input_shape = (1,)
             layer = Lambda(lambda _: constant(y_pred_cat), input_shape=input_shape)
-            fake_model = Sequential(layers=[layer])
-            callback.set_model(fake_model)
+            model = Sequential(layers=[layer])
+            callback.set_model(model)
 
             X = numpy.zeros((y_true_cat.shape[0], 1))
 
-            # Verify that the callback translates sequences correctly by itself
-            y_true_cb, y_pred_cb = callback.predict(X, y_true_cat)
-            self.assertEqual(y_pred_cb, self.y_pred)
-            self.assertEqual(y_true_cb, self.y_true)
-
             # Verify that the callback stores the correct number in logs
-            fake_model.compile(optimizer='adam', loss='categorical_crossentropy')
-            history = fake_model.fit(x=X, batch_size=y_true_cat.shape[0], y=y_true_cat,
-                                     validation_data=(X, y_true_cat),
-                                     callbacks=[callback])
+            model.compile(optimizer='adam', loss='categorical_crossentropy')
+            history = model.fit(x=X, batch_size=y_true_cat.shape[0], y=y_true_cat,
+                                validation_data=(X, y_true_cat),
+                                callbacks=[callback])
             actual_score = history.history['f1'][0]
             self.assertAlmostEqual(actual_score, expected_score)
+
+            # Verify fit_generator and digits=None work
+            model2 = Sequential(layers=[layer])
+            callback2 = F1Metrics(id2label=tokenizer.index_word, digits=None)
+            callback2.set_model(model2)
+            model2.compile(optimizer='adam', loss='categorical_crossentropy')
+            generator = itertools.repeat((X, y_true_cat))
+            history = model.fit_generator(
+                generator=generator,
+                steps_per_epoch=1,
+                validation_data=generator,
+                validation_steps=1,
+                callbacks=[callback])
+            actual_score = history.history['f1'][0]
+            self.assertAlmostEqual(actual_score, expected_score)
+
+            # Verify that the callback translates sequences correctly by itself
+            # (placed after previous calls to make sure callback is fully initialized)
+            y_true_cb, y_pred_cb = callback.predict(X, [y_true_cat])
+            self.assertEqual(y_pred_cb, [self.y_pred])
+            self.assertEqual(y_true_cb, [self.y_true])
+
+    def test_keras_callback_multi_output(self):
+        expected_score = f1_score(self.y_true, self.y_pred)
+        tokenizer, maxlen = self.keras_tokenizer_maxlen()
+
+        padding = 'post'
+        y_true_cat = self.keras_categorical(self.y_true, padding, tokenizer, maxlen)
+        y_pred_cat = self.keras_categorical(self.y_pred, padding, tokenizer, maxlen)
+
+        input_shape = (1,)
+        input_layer = Input(shape=input_shape)
+        outputs = [Lambda(lambda _: constant(y_pred_cat), input_shape=input_shape,
+                          name="out{}".format(i + 1))(input_layer)
+                   for i in range(3)]
+        model = Model(inputs=input_layer, outputs=outputs)
+        callback = F1Metrics(id2label=tokenizer.index_word, outputs=[outputs[1], 2])
+        callback.set_model(model)
+
+        X = numpy.zeros((y_true_cat.shape[0], 1))
+
+        # Verify that the callback stores the correct number in logs
+        model.compile(optimizer='adam', loss='categorical_crossentropy')
+        y_true_list = [y_true_cat] * len(outputs)
+        history = model.fit(x=X, batch_size=y_true_cat.shape[0],
+                            y=y_true_list,
+                            validation_data=(X, y_true_list),
+                            callbacks=[callback])
+        actual_score = history.history['f1_out2'][0]
+        self.assertAlmostEqual(actual_score, expected_score)
+
+        # Verify fit_generator works
+        model_2 = Model(inputs=input_layer, outputs=outputs)
+        callback2 = F1Metrics(id2label=tokenizer.index_word, outputs=[outputs[1], 2])
+        callback2.set_model(model_2)
+        model_2.compile(optimizer='adam', loss='categorical_crossentropy')
+        generator = itertools.repeat((X, y_true_list))
+        history = model.fit_generator(
+            generator=generator,
+            steps_per_epoch=1,
+            validation_data=generator,
+            validation_steps=1,
+            callbacks=[callback])
+        actual_score = history.history['f1_out2'][0]
+        self.assertAlmostEqual(actual_score, expected_score)
 
     def load_labels(self, filename):
         y_true, y_pred = [], []
