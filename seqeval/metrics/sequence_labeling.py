@@ -12,6 +12,33 @@ from collections import defaultdict
 import numpy as np
 
 
+def align_lengths(y_true, y_pred):
+    """Aligns lengths of predicted sequences to target sequences.
+
+    Args:
+        y_true : 2d array. Ground truth (correct) target values.
+        y_pred : 2d array. Estimated targets as returned by a tagger.
+
+    Returns:
+        aligned_y_pred : 2d array with y_true shape
+
+    Example:
+        >>> from seqeval.metrics.sequence_labeling import align_lengths
+        >>> y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
+        >>> y_pred = [['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC'], ['B-PER', 'I-PER', 'O', 'B-LOC', 'I-LOC']]
+        >>> align_lengths(y_true, y_pred)
+        [['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'O'], ['B-PER', 'I-PER', 'O']]
+    """
+    # for 1d array
+    if not any(isinstance(s, list) for s in y_true):
+        return y_pred
+
+    aligned_y_pred = [s_pred[:len(s_true)] + ['O'] * (len(s_true) - len(s_pred))
+                          for s_true, s_pred in zip(y_true, y_pred)]
+
+    return aligned_y_pred
+
+
 def get_entities(seq, suffix=False):
     """Gets entities from sequence.
 
@@ -137,6 +164,8 @@ def f1_score(y_true, y_pred, average='micro', suffix=False):
         >>> f1_score(y_true, y_pred)
         0.50
     """
+    y_pred = align_lengths(y_true, y_pred)
+
     true_entities = set(get_entities(y_true, suffix))
     pred_entities = set(get_entities(y_pred, suffix))
 
@@ -172,6 +201,8 @@ def accuracy_score(y_true, y_pred):
         >>> accuracy_score(y_true, y_pred)
         0.80
     """
+    y_pred = align_lengths(y_true, y_pred)
+
     if any(isinstance(s, list) for s in y_true):
         y_true = [item for sublist in y_true for item in sublist]
         y_pred = [item for sublist in y_pred for item in sublist]
@@ -207,6 +238,8 @@ def precision_score(y_true, y_pred, average='micro', suffix=False):
         >>> precision_score(y_true, y_pred)
         0.50
     """
+    y_pred = align_lengths(y_true, y_pred)
+
     true_entities = set(get_entities(y_true, suffix))
     pred_entities = set(get_entities(y_pred, suffix))
 
@@ -241,6 +274,8 @@ def recall_score(y_true, y_pred, average='micro', suffix=False):
         >>> recall_score(y_true, y_pred)
         0.50
     """
+    y_pred = align_lengths(y_true, y_pred)
+
     true_entities = set(get_entities(y_true, suffix))
     pred_entities = set(get_entities(y_pred, suffix))
 
@@ -270,6 +305,8 @@ def performance_measure(y_true, y_pred):
         >>> performance_measure(y_true, y_pred)
         (3, 3, 1, 4)
     """
+    y_pred = align_lengths(y_true, y_pred)
+
     performace_dict = dict()
     if any(isinstance(s, list) for s in y_true):
         y_true = [item for sublist in y_true for item in sublist]
@@ -310,6 +347,8 @@ def classification_report(y_true, y_pred, digits=2, suffix=False):
           macro avg       0.50      0.50      0.50         2
         <BLANKLINE>
     """
+    y_pred = align_lengths(y_true, y_pred)
+
     true_entities = set(get_entities(y_true, suffix))
     pred_entities = set(get_entities(y_pred, suffix))
 

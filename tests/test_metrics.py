@@ -19,7 +19,7 @@ from seqeval.callbacks import F1Metrics
 from seqeval.metrics import (f1_score, accuracy_score, classification_report,
                              precision_score, recall_score,
                              performance_measure)
-from seqeval.metrics.sequence_labeling import get_entities
+from seqeval.metrics.sequence_labeling import align_lengths, get_entities
 
 
 class TestMetrics(unittest.TestCase):
@@ -30,6 +30,12 @@ class TestMetrics(unittest.TestCase):
         cls.y_true, cls.y_pred = cls.load_labels(cls, cls.file_name)
         cls.inv_file_name = os.path.join(os.path.dirname(__file__), 'data/ground_truth_inv.txt')
         cls.y_true_inv, cls.y_pred_inv = cls.load_labels(cls, cls.inv_file_name)
+
+    def test_align_lengths(self):
+        y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
+        y_pred = [['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC'], ['B-PER', 'I-PER', 'O', 'B-LOC', 'I-LOC']]
+        self.assertEqual(align_lengths(y_true, y_pred),
+                         [['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'O'], ['B-PER', 'I-PER', 'O']])
 
     def test_get_entities(self):
         y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
