@@ -34,11 +34,11 @@ class TestMetrics(unittest.TestCase):
     def test_get_entities_with_criteria_exact(self):
         y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
         self.assertEqual(get_entities(y_true), [('MISC', 3, 5), ('PER', 7, 8)])
-    
+
     def test_get_entities_with_criteria_left(self):
         y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
         self.assertEqual(get_entities(y_true, criteria='left'), [('MISC', 3), ('PER', 7)])
-    
+
     def test_get_entities_with_criteria_right(self):
         y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
         self.assertEqual(get_entities(y_true, criteria='left'), [('MISC', 5), ('PER', 8)])
