@@ -312,19 +312,19 @@ def performance_measure(y_true, y_pred):
         >>> performance_measure(y_true, y_pred)
         (3, 3, 1, 4)
     """
-    performace_dict = dict()
+    performance_dict = dict()
     if any(isinstance(s, list) for s in y_true):
         y_true = [item for sublist in y_true for item in sublist]
         y_pred = [item for sublist in y_pred for item in sublist]
-    performace_dict['TP'] = sum(y_t == y_p for y_t, y_p in zip(y_true, y_pred)
+    performance_dict['TP'] = sum(y_t == y_p for y_t, y_p in zip(y_true, y_pred)
                                 if ((y_t != 'O') or (y_p != 'O')))
-    performace_dict['FP'] = sum(y_t != y_p for y_t, y_p in zip(y_true, y_pred))
-    performace_dict['FN'] = sum(((y_t != 'O') and (y_p == 'O'))
+    performance_dict['FP'] = sum(y_t != y_p for y_t, y_p in zip(y_true, y_pred))
+    performance_dict['FN'] = sum(((y_t != 'O') and (y_p == 'O'))
                                 for y_t, y_p in zip(y_true, y_pred))
-    performace_dict['TN'] = sum((y_t == y_p == 'O')
+    performance_dict['TN'] = sum((y_t == y_p == 'O')
                                 for y_t, y_p in zip(y_true, y_pred))
 
-    return performace_dict
+    return performance_dict
 
 
 def classification_report(y_true, y_pred, digits=2, criteria='exact', suffix=False):
