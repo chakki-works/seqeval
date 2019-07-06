@@ -31,9 +31,17 @@ class TestMetrics(unittest.TestCase):
         cls.inv_file_name = os.path.join(os.path.dirname(__file__), 'data/ground_truth_inv.txt')
         cls.y_true_inv, cls.y_pred_inv = cls.load_labels(cls, cls.inv_file_name)
 
-    def test_get_entities(self):
+    def test_get_entities_with_criteria_exact(self):
         y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
         self.assertEqual(get_entities(y_true), [('MISC', 3, 5), ('PER', 7, 8)])
+    
+    def test_get_entities_with_criteria_left(self):
+        y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
+        self.assertEqual(get_entities(y_true, criteria='left'), [('MISC', 3), ('PER', 7)])
+    
+    def test_get_entities_with_criteria_right(self):
+        y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
+        self.assertEqual(get_entities(y_true, criteria='left'), [('MISC', 5), ('PER', 8)])
 
     def test_get_entities_with_suffix_style(self):
         y_true = ['O', 'O', 'O', 'MISC-B', 'MISC-I', 'MISC-I', 'O', 'PER-B', 'PER-I']
@@ -68,7 +76,7 @@ class TestMetrics(unittest.TestCase):
             self.assertLess(abs(f1_pred - f1_true), 1e-4)
 
     def test_metrics_for_inv_data(self):
-        with open(self.file_name) as f:
+        with open(self.file_name) as _:
             acc_pred = accuracy_score(self.y_true, self.y_pred)
             p_pred = precision_score(self.y_true, self.y_pred)
             r_pred = recall_score(self.y_true, self.y_pred)
@@ -183,7 +191,7 @@ class TestMetrics(unittest.TestCase):
         types = ['PER', 'MISC', 'ORG', 'LOC']
         report = ''
         raw_fmt = '{} {} {} {}\n'
-        for i in range(1000):
+        for _ in range(1000):
             type_true = random.choice(types)
             type_pred = random.choice(types)
             prefix_true = random.choice(prefixes)
