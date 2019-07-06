@@ -25,6 +25,9 @@ def get_entities(seq, criteria='exact', suffix=False):
     Returns:
         list: list of (chunk_type, chunk_start, chunk_end).
 
+    Raises:
+        ValueError, if `criteria` is not one of 'exact', 'left', or 'right'.
+
     Example:
         >>> from seqeval.metrics.sequence_labeling import get_entities
         >>> seq = ['B-PER', 'I-PER', 'O', 'B-LOC']
@@ -149,6 +152,9 @@ def f1_score(y_true, y_pred, average='micro', criteria='exact', suffix=False):
     Returns:
         score : float.
 
+    Raises:
+        ValueError, if `criteria` is not one of 'exact', 'left', or 'right'.
+
     Example:
         >>> from seqeval.metrics import f1_score
         >>> y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
@@ -228,6 +234,9 @@ def precision_score(y_true, y_pred, average='micro', criteria='exact', suffix=Fa
     Returns:
         score : float.
 
+    Raises:
+        ValueError, if `criteria` is not one of 'exact', 'left', or 'right'.
+
     Example:
         >>> from seqeval.metrics import precision_score
         >>> y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
@@ -271,6 +280,9 @@ def recall_score(y_true, y_pred, average='micro', criteria='exact', suffix=False
     Returns:
         score : float.
 
+    Raises:
+        ValueError, if `criteria` is not one of 'exact', 'left', or 'right'.
+
     Example:
         >>> from seqeval.metrics import recall_score
         >>> y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
@@ -280,7 +292,7 @@ def recall_score(y_true, y_pred, average='micro', criteria='exact', suffix=False
     """
     if criteria not in ['exact', 'left', 'right']:
         err_msg = ("Expected criteria to be one of 'exact', 'left', or 'right'."
-                    " Got: {}").format(criteria)
+                   " Got: {}").format(criteria)
         raise ValueError(err_msg)
 
     true_entities = set(get_entities(y_true, criteria, suffix))
@@ -317,12 +329,12 @@ def performance_measure(y_true, y_pred):
         y_true = [item for sublist in y_true for item in sublist]
         y_pred = [item for sublist in y_pred for item in sublist]
     performance_dict['TP'] = sum(y_t == y_p for y_t, y_p in zip(y_true, y_pred)
-                                if ((y_t != 'O') or (y_p != 'O')))
+                                 if ((y_t != 'O') or (y_p != 'O')))
     performance_dict['FP'] = sum(y_t != y_p for y_t, y_p in zip(y_true, y_pred))
     performance_dict['FN'] = sum(((y_t != 'O') and (y_p == 'O'))
-                                for y_t, y_p in zip(y_true, y_pred))
+                                 for y_t, y_p in zip(y_true, y_pred))
     performance_dict['TN'] = sum((y_t == y_p == 'O')
-                                for y_t, y_p in zip(y_true, y_pred))
+                                 for y_t, y_p in zip(y_true, y_pred))
 
     return performance_dict
 
@@ -341,6 +353,9 @@ def classification_report(y_true, y_pred, digits=2, criteria='exact', suffix=Fal
 
     Returns:
         report : string. Text summary of the precision, recall, F1 score for each class.
+
+    Raises:
+        ValueError, if `criteria` is not one of 'exact', 'left', or 'right'.
 
     Examples:
         >>> from seqeval.metrics import classification_report
