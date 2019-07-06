@@ -18,7 +18,7 @@ def get_entities(seq, criteria='exact', suffix=False):
     Args:
         seq (list): sequence of labels.
         criteria (str): Optional, criteria which will be used for evaluation.
-            'exact' matches boundaries  directly, 'left' requires only a left
+            'exact' matches boundaries exactly, 'left' requires only a left
             boundary match and 'right' requires only a right boundary match.
             Defaults to 'exact'.
 
@@ -142,7 +142,7 @@ def f1_score(y_true, y_pred, average='micro', criteria='exact', suffix=False):
         y_true : 2d array. Ground truth (correct) target values.
         y_pred : 2d array. Estimated targets as returned by a tagger.
         criteria (str): Optional, criteria which will be used for evaluation.
-            'exact' matches boundaries  directly, 'left' requires only a left
+            'exact' matches boundaries exactly, 'left' requires only a left
             boundary match and 'right' requires only a right boundary match.
             Defaults to 'exact'.
 
@@ -221,7 +221,7 @@ def precision_score(y_true, y_pred, average='micro', criteria='exact', suffix=Fa
         y_true : 2d array. Ground truth (correct) target values.
         y_pred : 2d array. Estimated targets as returned by a tagger.
         criteria (str): Optional, criteria which will be used for evaluation.
-            'exact' matches boundaries  directly, 'left' requires only a left
+            'exact' matches boundaries exactly, 'left' requires only a left
             boundary match and 'right' requires only a right boundary match.
             Defaults to 'exact'.
 
@@ -264,7 +264,7 @@ def recall_score(y_true, y_pred, average='micro', criteria='exact', suffix=False
         y_true : 2d array. Ground truth (correct) target values.
         y_pred : 2d array. Estimated targets as returned by a tagger.
         criteria (str): Optional, criteria which will be used for evaluation.
-            'exact' matches boundaries  directly, 'left' requires only a left
+            'exact' matches boundaries exactly, 'left' requires only a left
             boundary match and 'right' requires only a right boundary match.
             Defaults to 'exact'.
 
@@ -335,7 +335,7 @@ def classification_report(y_true, y_pred, digits=2, criteria='exact', suffix=Fal
         y_pred : 2d array. Estimated targets as returned by a classifier.
         digits : int. Number of digits for formatting output floating point values.
         criteria (str): Optional, criteria which will be used for evaluation.
-            'exact' matches boundaries  directly, 'left' requires only a left
+            'exact' matches boundaries exactly, 'left' requires only a left
             boundary match and 'right' requires only a right boundary match.
             Defaults to 'exact'.
 
