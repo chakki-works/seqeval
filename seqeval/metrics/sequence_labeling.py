@@ -27,6 +27,19 @@ def get_entities(seq, suffix=False):
         >>> get_entities(seq)
         [('PER', 0, 1), ('LOC', 3, 3)]
     """
+
+    def _validate_chunk(chunk, suffix):
+        if chunk == 'O':
+            return
+
+        if suffix:
+            if not (chunk.endswith('-B') or chunk.endswith('-I')):
+                raise ValueError('Invalid tag is found: {}'.format(chunk))
+
+        else:
+            if not (chunk.startswith('B-') or chunk.startswith('I-')):
+                raise ValueError('Invalid tag is found: {}'.format(chunk))
+
     # for nested list
     if any(isinstance(s, list) for s in seq):
         seq = [item for sublist in seq for item in sublist + ['O']]
@@ -36,6 +49,8 @@ def get_entities(seq, suffix=False):
     begin_offset = 0
     chunks = []
     for i, chunk in enumerate(seq + ['O']):
+        _validate_chunk(chunk, suffix)
+
         if suffix:
             tag = chunk[-1]
             type_ = chunk.split('-')[0]
