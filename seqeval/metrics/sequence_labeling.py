@@ -322,7 +322,7 @@ def classification_report(y_true, y_pred, digits=2, suffix=False):
     for e in pred_entities:
         d2[e[0]].add((e[1], e[2]))
 
-    last_line_heading = 'macro avg'
+    last_line_heading = 'weighted avg'
     width = max(name_width, len(last_line_heading), digits)
 
     headers = ["precision", "recall", "f1-score", "support"]
@@ -357,6 +357,12 @@ def classification_report(y_true, y_pred, digits=2, suffix=False):
                              precision_score(y_true, y_pred, suffix=suffix),
                              recall_score(y_true, y_pred, suffix=suffix),
                              f1_score(y_true, y_pred, suffix=suffix),
+                             np.sum(s),
+                             width=width, digits=digits)
+    report += row_fmt.format('macro avg',
+                             np.average(ps),
+                             np.average(rs),
+                             np.average(f1s),
                              np.sum(s),
                              width=width, digits=digits)
     report += row_fmt.format(last_line_heading,
