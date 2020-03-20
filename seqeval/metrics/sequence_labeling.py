@@ -41,7 +41,7 @@ def get_entities(seq, suffix=False):
             type_ = chunk.split('-')[0]
         else:
             tag = chunk[0]
-            type_ = chunk.split('-')[-1]
+            type_ = '-'.join(chunk.split('-')[:-1])
 
         if end_of_chunk(prev_tag, tag, prev_type, type_):
             chunks.append((prev_type, begin_offset, i-1))
