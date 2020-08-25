@@ -265,10 +265,10 @@ def performance_measure(y_true, y_pred):
 
     Example:
         >>> from seqeval.metrics import performance_measure
-        >>> y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'O', 'B-ORG'], ['B-PER', 'I-PER', 'O']]
-        >>> y_pred = [['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'O'], ['B-PER', 'I-PER', 'O']]
+        >>> y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'O', 'B-ORG'], ['B-PER', 'I-PER', 'O', 'B-PER']]
+        >>> y_pred = [['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'O'], ['B-PER', 'I-PER', 'O', 'B-MISC']]
         >>> performance_measure(y_true, y_pred)
-        {'TP': 3, 'FP': 2, 'FN': 1, 'TN': 4}
+        {'TP': 3, 'FP': 3, 'FN': 1, 'TN': 4}
     """
     performace_dict = dict()
     if any(isinstance(s, list) for s in y_true):
@@ -276,7 +276,7 @@ def performance_measure(y_true, y_pred):
         y_pred = [item for sublist in y_pred for item in sublist]
     performace_dict['TP'] = sum(y_t == y_p for y_t, y_p in zip(y_true, y_pred)
                                 if ((y_t != 'O') or (y_p != 'O')))
-    performace_dict['FP'] = sum(((y_t != 'O') != (y_p != 'O')) for y_t, y_p in zip(y_true, y_pred))
+    performace_dict['FP'] = sum(((y_t != y_p) and (y_p != 'O')) for y_t, y_p in zip(y_true, y_pred))
     performace_dict['FN'] = sum(((y_t != 'O') and (y_p == 'O'))
                                 for y_t, y_p in zip(y_true, y_pred))
     performace_dict['TN'] = sum((y_t == y_p == 'O')
