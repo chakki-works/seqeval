@@ -49,6 +49,11 @@ class TestMetrics(unittest.TestCase):
         with self.assertRaises(Exception):
             get_entities(y_true)
 
+    def test_get_entities_with_only_IOB(self):
+        y_true = [['O', 'O', 'O', 'B', 'I', 'I', 'O'], ['B', 'I', 'O']]
+        entities = get_entities(y_true)
+        self.assertEqual(entities, [('_', 3, 5), ('_', 8, 9)])
+
     def test_performance_measure(self):
         y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'O', 'B-ORG'], ['B-PER', 'I-PER', 'O', 'B-PER']]
         y_pred = [['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'O'], ['B-PER', 'I-PER', 'O', 'B-MISC']]

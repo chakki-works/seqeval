@@ -29,15 +29,15 @@ def get_entities(seq, suffix=False):
     """
 
     def _validate_chunk(chunk, suffix):
-        if chunk == 'O':
+        if chunk in ['O', 'B', 'I', 'E', 'S']:
             return
 
         if suffix:
-            if not (chunk.endswith('-B') or chunk.endswith('-I')):
+            if not (chunk.endswith('-B') or chunk.endswith('-I') or chunk.endswith('-E') or chunk.endswith('-S')):
                 raise ValueError('Invalid tag is found: {}'.format(chunk))
 
         else:
-            if not (chunk.startswith('B-') or chunk.startswith('I-')):
+            if not (chunk.startswith('B-') or chunk.startswith('I-') or chunk.startswith('E-') or chunk.startswith('S-')):
                 raise ValueError('Invalid tag is found: {}'.format(chunk))
 
     # for nested list
