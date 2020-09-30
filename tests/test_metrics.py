@@ -39,6 +39,16 @@ class TestMetrics(unittest.TestCase):
         y_true = ['O', 'O', 'O', 'MISC-B', 'MISC-I', 'MISC-I', 'O', 'PER-B', 'PER-I']
         self.assertEqual(get_entities(y_true, suffix=True), [('MISC', 3, 5), ('PER', 7, 8)])
 
+    def test_get_entities_with_unexpected_input(self):
+        y_true = ['O', 'O', 'O', 'MISC', 'MISC', 'MISC', 'O', 'PER', 'PER']
+        with self.assertRaises(Exception):
+            get_entities(y_true)
+
+    def test_get_entities_with_unexpected_input_and_suffix_style(self):
+        y_true = ['O', 'O', 'O', 'MISC', 'MISC', 'MISC', 'O', 'PER', 'PER']
+        with self.assertRaises(Exception):
+            get_entities(y_true)
+
     def test_performance_measure(self):
         y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'O', 'B-ORG'], ['B-PER', 'I-PER', 'O', 'B-PER']]
         y_pred = [['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'O'], ['B-PER', 'I-PER', 'O', 'B-MISC']]
