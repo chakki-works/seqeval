@@ -183,23 +183,3 @@ class Tokens:
         token = self.tokens[pos]
         prev = self.tokens[pos-1]
         return token.is_end(prev)
-
-
-if __name__ == '__main__':
-    sequences = [
-        Tokens(['B-PER', 'I-PER', 'O', 'B-LOC'], IOB2),
-        Tokens(['B-PER', 'I-ORG', 'B-ORG', 'B-LOC'], IOB2),
-        Tokens(['I-PER', 'I-PER', 'I-ORG', 'I-LOC'], IOB2),
-        #Tokens(['B-PER', 'E-PER', 'S-PER'], IOB2),
-        Tokens(['B-PER', 'E-PER', 'S-PER'], IOBES),
-        Tokens(['B-PER', 'I-PER', 'S-PER'], IOBES),
-        Tokens(['I-PER', 'I-PER', 'I-ORG', 'I-LOC'], IOBES),
-        Tokens(['B-PER', 'I-ORG', 'B-ORG', 'B-LOC'], IOBES),
-        Tokens(['O', 'I', 'E', 'O', 'I', 'I', 'E', 'E', 'O', 'E', 'O'], IOE2)
-    ]
-    for tokens in sequences:
-        print(tokens.entities)
-    entity_set1 = {Entity(0, 1, 'PER'), Entity(2, 3, 'ORG')}
-    entity_set2 = {Entity(0, 1, 'PER')}
-    print(entity_set1 & entity_set2)
-    print(entity_set1 - entity_set2)
