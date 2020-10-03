@@ -1,10 +1,9 @@
-import abc
 import enum
 
 
 class Entity:
 
-    def __init__(self, start, end, tag):
+    def __init__(self, start: int, end: int, tag: str):
         self.start = start
         self.end = end
         self.tag = tag
@@ -31,16 +30,19 @@ class Prefix(enum.Flag):
     ANY = I | O | B | E | S
 
 
-class Token(metaclass=abc.ABCMeta):
+class Token:
     allowed_prefix = None
     accepts_as_start = None
     accepts_as_inside = None
     accepts_as_end = None
 
-    def __init__(self, token, suffix=False, delimiter='-'):
+    def __init__(self, token: str, suffix: bool = False, delimiter: str = '-'):
         self.token = token
         self.suffix = suffix
         self.delimiter = delimiter
+
+    def __repr__(self):
+        return self.token
 
     @property
     def prefix(self):
@@ -60,15 +62,18 @@ class Token(metaclass=abc.ABCMeta):
             raise ValueError(message.format(self.token, allowed_prefixes))
         return True
 
-    def is_start(self, prev):
+    def is_start(self, prev: 'Token'):
+        """The current token is the start of chunk."""
         return self.check_pattern(prev, self.accepts_as_start)
 
-    def is_inside(self, prev):
+    def is_inside(self, prev: 'Token'):
+        """The current token is inside of chunk."""
         if prev.tag != self.tag:
             return False
         return (prev.prefix, self.prefix) in self.accepts_as_inside
 
-    def is_end(self, prev):
+    def is_end(self, prev: 'Token'):
+        """The previous token is the end of chunk."""
         return self.check_pattern(prev, self.accepts_as_end)
 
     def check_pattern(self, prev, pattern):
@@ -91,7 +96,9 @@ class IOB2(Token):
         (Prefix.B, Prefix.B)
     }
 
-    def is_end(self, prev):
+    def is_end(self, prev: 'Token'):
+        if prev.prefix == Prefix.O:
+            return False
         if prev.tag != self.tag:
             return True
         return super(IOB2, self).is_end(prev)
@@ -113,7 +120,9 @@ class IOE2(Token):
         (Prefix.E, Prefix.ANY)
     }
 
-    def is_start(self, prev):
+    def is_start(self, prev: 'Token'):
+        if self.prefix == Prefix.O:
+            return False
         if prev.tag != self.tag:
             return True
         return super(IOE2, self).is_start(prev)
@@ -127,8 +136,9 @@ class IOBES(Token):
     }
     accepts_as_inside = {
         (Prefix.B, Prefix.I),
+        (Prefix.B, Prefix.E),
         (Prefix.I, Prefix.I),
-        (Prefix.B, Prefix.E)
+        (Prefix.I, Prefix.E)
     }
     accepts_as_end = {
         (Prefix.S, Prefix.ANY),
@@ -164,7 +174,7 @@ class Tokens:
                 end = self._forward(start=i + 1, prev=token)
                 if self._is_end(end):
                     entity = Entity(start=i, end=end, tag=token.tag)
-                    entities.append(entity)
+                    entities.append(entity.to_tuple())
                 i = end
             else:
                 i += 1
@@ -177,9 +187,9 @@ class Tokens:
                 prev = token
             else:
                 return i
-        return len(self.tokens)
+        return len(self.tokens) - 2
 
-    def _is_end(self, pos):
-        token = self.tokens[pos]
-        prev = self.tokens[pos-1]
+    def _is_end(self, i):
+        token = self.tokens[i]
+        prev = self.tokens[i - 1]
         return token.is_end(prev)
