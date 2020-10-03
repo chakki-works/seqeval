@@ -8,6 +8,7 @@ from __future__ import division
 from __future__ import print_function
 
 from collections import defaultdict
+import warnings
 
 import numpy as np
 
@@ -34,11 +35,11 @@ def get_entities(seq, suffix=False):
 
         if suffix:
             if not (chunk.endswith('-B') or chunk.endswith('-I') or chunk.endswith('-E') or chunk.endswith('-S')):
-                raise ValueError('Invalid tag is found: {}'.format(chunk))
+                warnings.warn('{} seems not to be NE tag.'.format(chunk))
 
         else:
             if not (chunk.startswith('B-') or chunk.startswith('I-') or chunk.startswith('E-') or chunk.startswith('S-')):
-                raise ValueError('Invalid tag is found: {}'.format(chunk))
+                warnings.warn('{} seems not to be NE tag.'.format(chunk))
 
     # for nested list
     if any(isinstance(s, list) for s in seq):
