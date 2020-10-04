@@ -1,0 +1,21 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pytest = "*"
+autopep8 = "*"
+flake8 = "*"
+pytest-cov = "*"
+isort = "*"
+
+[packages]
+numpy = "*"
+
+[requires]
+python_version = "3.8"
+
+[scripts]
+isort = "isort . -c"
+test = "pytest --cov=text2sparql --cov-report=term-missing -vv tests"
