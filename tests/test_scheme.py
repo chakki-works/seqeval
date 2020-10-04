@@ -231,6 +231,30 @@ def test_iob2_tokens(tokens, expected):
     'tokens, expected',
     [
         ([], []),
+        (['B'], [('_', 0, 1)]),
+        (['I'], []),
+        (['O'], []),
+        (['O', 'O'], []),
+        (['O', 'I'], []),
+        (['O', 'B'], [('_', 1, 2)]),
+        (['I', 'O'], []),
+        (['I', 'I'], []),
+        (['I', 'B'], [('_', 1, 2)]),
+        (['B', 'O'], [('_', 0, 1)]),
+        (['B', 'I'], [('_', 0, 2)]),
+        (['B', 'B'], [('_', 0, 1), ('_', 1, 2)])
+    ]
+)
+def test_iob2_tokens_without_tag(tokens, expected):
+    tokens = Tokens(tokens, IOB2)
+    entities = tokens.entities
+    assert entities == expected
+
+
+@pytest.mark.parametrize(
+    'tokens, expected',
+    [
+        ([], []),
         (['E-PER'], []),
         (['I-PER'], [('PER', 0, 1)]),
         (['O'], []),
@@ -284,6 +308,30 @@ def test_ioe2_tokens(tokens, expected):
 @pytest.mark.parametrize(
     'tokens, expected',
     [
+        ([], []),
+        (['E'], [('_', 0, 1)]),
+        (['I'], []),
+        (['O'], []),
+        (['O', 'O'], []),
+        (['O', 'I'], []),
+        (['O', 'E'], [('_', 1, 2)]),
+        (['I', 'O'], []),
+        (['I', 'I'], []),
+        (['I', 'E'], [('_', 0, 2)]),
+        (['E', 'O'], [('_', 0, 1)]),
+        (['E', 'I'], [('_', 0, 1)]),
+        (['E', 'E'], [('_', 0, 1), ('_', 1, 2)])
+    ]
+)
+def test_ioe2_tokens_without_tag(tokens, expected):
+    tokens = Tokens(tokens, IOE2)
+    entities = tokens.entities
+    assert entities == expected
+
+
+@pytest.mark.parametrize(
+    'tokens, expected',
+    [
         (['O'], []),
         (['I-PER'], []),
         (['B-PER'], []),
@@ -304,6 +352,7 @@ def test_ioe2_tokens(tokens, expected):
         (['B-PER', 'O'], []),
         (['B-PER', 'I-PER'], []),
         (['B-PER', 'I-ORG'], []),
+        (['B-PER', 'B-PER'], []),
         (['B-PER', 'E-PER'], [('PER', 0, 2)]),
         (['B-PER', 'E-ORG'], []),
         (['B-PER', 'S-PER'], [('PER', 1, 2)]),
@@ -320,6 +369,47 @@ def test_ioe2_tokens(tokens, expected):
     ]
 )
 def test_iobes_tokens(tokens, expected):
+    tokens = Tokens(tokens, IOBES)
+    entities = tokens.entities
+    assert entities == expected
+
+
+@pytest.mark.parametrize(
+    'tokens, expected',
+    [
+        (['O'], []),
+        (['I'], []),
+        (['B'], []),
+        (['E'], []),
+        (['S'], [('_', 0, 1)]),
+        (['O', 'O'], []),
+        (['O', 'I'], []),
+        (['O', 'B'], []),
+        (['O', 'E'], []),
+        (['O', 'S'], [('_', 1, 2)]),
+        (['I', 'O'], []),
+        (['I', 'I'], []),
+        (['I', 'B'], []),
+        (['I', 'E'], []),
+        (['I', 'S'], [('_', 1, 2)]),
+        (['B', 'O'], []),
+        (['B', 'I'], []),
+        (['B', 'B'], []),
+        (['B', 'E'], [('_', 0, 2)]),
+        (['B', 'S'], [('_', 1, 2)]),
+        (['E', 'O'], []),
+        (['E', 'I'], []),
+        (['E', 'B'], []),
+        (['E', 'E'], []),
+        (['E', 'S'], [('_', 1, 2)]),
+        (['S', 'O'], [('_', 0, 1)]),
+        (['S', 'I'], [('_', 0, 1)]),
+        (['S', 'B'], [('_', 0, 1)]),
+        (['S', 'E'], [('_', 0, 1)]),
+        (['S', 'S'], [('_', 0, 1), ('_', 1, 2)])
+    ]
+)
+def test_iobes_tokens_without_tag(tokens, expected):
     tokens = Tokens(tokens, IOBES)
     entities = tokens.entities
     assert entities == expected
