@@ -19,3 +19,4 @@ python_version = "3.8"
 [scripts]
 isort = "isort . -c"
 test = "pytest --cov=text2sparql --cov-report=term-missing -vv tests"
+flake8 = "flake8 seqeval --ignore=F401,E741"
