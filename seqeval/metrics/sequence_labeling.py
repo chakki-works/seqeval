@@ -340,11 +340,13 @@ def classification_report(y_true, y_pred, digits=2, suffix=False, output_dict=Fa
     for e in pred_entities:
         d2[e[0]].add((e[1], e[2]))
 
+    avg_types = ['micro avg', 'macro avg', 'weighted avg']
+
     if output_dict:
         report_dict = dict()
     else:
-        last_line_heading = 'weighted avg'
-        width = max(name_width, len(last_line_heading), digits)
+        avg_width = max([len(x) for x in avg_types])
+        width = max(name_width, avg_width, digits)
         headers = ["precision", "recall", "f1-score", "support"]
         head_fmt = u'{:>{width}s} ' + u' {:>9}' * len(headers)
         report = head_fmt.format(u'', *headers, width=width)
@@ -380,7 +382,7 @@ def classification_report(y_true, y_pred, digits=2, suffix=False, output_dict=Fa
     # compute averages
     nb_true = np.sum(s)
 
-    for avg_type in ['micro avg', 'macro avg', 'weighted avg']:
+    for avg_type in avg_types:
         if avg_type == 'micro avg':
             # micro average
             p = precision_score(y_true, y_pred, suffix=suffix)
@@ -396,6 +398,8 @@ def classification_report(y_true, y_pred, digits=2, suffix=False, output_dict=Fa
             p = np.average(ps, weights=s)
             r = np.average(rs, weights=s)
             f1 = np.average(f1s, weights=s)
+        else:
+            assert False, "unexpected average: {}".format(avg_type)
 
         if output_dict:
             report_dict[avg_type] = {'precision': p, 'recall': r, 'f1-score': f1, 'support': nb_true}
