@@ -30,11 +30,17 @@ class Prefix(enum.Flag):
     ANY = I | O | B | E | S
 
 
+class Tag(enum.Flag):
+    SAME = enum.auto()
+    DIFF = enum.auto()
+    ANY = SAME | DIFF
+
+
 class Token:
     allowed_prefix = None
-    accepts_as_start = None
-    accepts_as_inside = None
-    accepts_as_end = None
+    start_patterns = None
+    inside_patterns = None
+    end_patterns = None
 
     def __init__(self, token: str, suffix: bool = False, delimiter: str = '-'):
         self.token = token
@@ -46,16 +52,19 @@ class Token:
 
     @property
     def prefix(self):
+        """Extracts a prefix from the token."""
         prefix = self.token[-1] if self.suffix else self.token[0]
         return Prefix[prefix]
 
     @property
     def tag(self):
+        """Extracts a tag from the token."""
         tag = self.token[:-1] if self.suffix else self.token[1:]
         tag = tag.strip(self.delimiter) or '_'
         return tag
 
     def is_valid(self):
+        """Check whether the prefix is allowed or not."""
         if self.prefix not in self.allowed_prefix:
             allowed_prefixes = str(self.allowed_prefix).replace('Prefix.', '')
             message = 'Invalid token is found: {}. Allowed prefixes are: {}.'
@@ -64,85 +73,128 @@ class Token:
 
     def is_start(self, prev: 'Token'):
         """The current token is the start of chunk."""
-        return self.check_pattern(prev, self.accepts_as_start)
+        return self.check_patterns(prev, self.start_patterns)
 
     def is_inside(self, prev: 'Token'):
         """The current token is inside of chunk."""
-        if prev.tag != self.tag:
-            return False
-        return (prev.prefix, self.prefix) in self.accepts_as_inside
+        return self.check_patterns(prev, self.inside_patterns)
 
     def is_end(self, prev: 'Token'):
         """The previous token is the end of chunk."""
-        return self.check_pattern(prev, self.accepts_as_end)
+        return self.check_patterns(prev, self.end_patterns)
 
-    def check_pattern(self, prev, pattern):
-        return any(prev.prefix in b and self.prefix in a for b, a in pattern)
+    def check_tag(self, prev, cond):
+        """Check whether the tag pattern is matched."""
+        if cond == Tag.ANY:
+            return True
+        if prev.tag == self.tag and cond == Tag.SAME:
+            return True
+        if prev.tag != self.tag and cond == Tag.DIFF:
+            return True
+        return False
+
+    def check_patterns(self, prev, patterns):
+        """Check whether the prefix patterns are matched."""
+        for prev_prefix, current_prefix, tag_cond in patterns:
+            if prev.prefix in prev_prefix and self.prefix in current_prefix and self.check_tag(prev, tag_cond):
+                return True
+        return False
+
+
+class IOB1(Token):
+    allowed_prefix = Prefix.I | Prefix.O | Prefix.B
+    start_patterns = {
+        (Prefix.O, Prefix.I, Tag.ANY),
+        (Prefix.I, Prefix.I, Tag.DIFF),
+        (Prefix.B, Prefix.I, Tag.DIFF),
+        (Prefix.I, Prefix.B, Tag.SAME),
+        (Prefix.B, Prefix.B, Tag.SAME)
+    }
+    inside_patterns = {
+        (Prefix.B, Prefix.I, Tag.SAME),
+        (Prefix.I, Prefix.I, Tag.SAME)
+    }
+    end_patterns = {
+        (Prefix.I, Prefix.ANY, Tag.DIFF),
+        (Prefix.I, Prefix.B, Tag.SAME),
+        (Prefix.B, Prefix.O, Tag.ANY),
+        (Prefix.B, Prefix.I, Tag.DIFF),
+        (Prefix.B, Prefix.B, Tag.SAME)
+    }
+
+
+class IOE1(Token):
+    allowed_prefix = Prefix.I | Prefix.O | Prefix.E
+    start_patterns = {
+        (Prefix.O, Prefix.I, Tag.ANY),
+        (Prefix.I, Prefix.I, Tag.DIFF),
+        (Prefix.E, Prefix.I, Tag.ANY),
+        (Prefix.E, Prefix.E, Tag.SAME)
+    }
+    inside_patterns = {
+        (Prefix.I, Prefix.I, Tag.SAME),
+        (Prefix.I, Prefix.E, Tag.SAME)
+    }
+    end_patterns = {
+        (Prefix.I, Prefix.ANY, Tag.DIFF),
+        (Prefix.E, Prefix.I, Tag.SAME),
+        (Prefix.E, Prefix.E, Tag.SAME)
+    }
 
 
 class IOB2(Token):
     allowed_prefix = Prefix.I | Prefix.O | Prefix.B
-    accepts_as_start = {
-        (Prefix.ANY, Prefix.B)
+    start_patterns = {
+        (Prefix.ANY, Prefix.B, Tag.ANY)
     }
-    accepts_as_inside = {
-        (Prefix.B, Prefix.I),
-        (Prefix.I, Prefix.I)
+    inside_patterns = {
+        (Prefix.B, Prefix.I, Tag.SAME),
+        (Prefix.I, Prefix.I, Tag.SAME)
     }
-    accepts_as_end = {
-        (Prefix.I, Prefix.O),
-        (Prefix.I, Prefix.B),
-        (Prefix.B, Prefix.O),
-        (Prefix.B, Prefix.B)
+    end_patterns = {
+        (Prefix.I, Prefix.O, Tag.ANY),
+        (Prefix.I, Prefix.I, Tag.DIFF),
+        (Prefix.I, Prefix.B, Tag.ANY),
+        (Prefix.B, Prefix.O, Tag.ANY),
+        (Prefix.B, Prefix.I, Tag.DIFF),
+        (Prefix.B, Prefix.B, Tag.ANY)
     }
-
-    def is_end(self, prev: 'Token'):
-        if prev.prefix == Prefix.O:
-            return False
-        if prev.tag != self.tag:
-            return True
-        return super(IOB2, self).is_end(prev)
 
 
 class IOE2(Token):
     allowed_prefix = Prefix.I | Prefix.O | Prefix.E
-    accepts_as_start = {
-        (Prefix.O, Prefix.I),
-        (Prefix.O, Prefix.E),
-        (Prefix.E, Prefix.I),
-        (Prefix.E, Prefix.E)
+    start_patterns = {
+        (Prefix.O, Prefix.I, Tag.ANY),
+        (Prefix.O, Prefix.E, Tag.ANY),
+        (Prefix.E, Prefix.I, Tag.ANY),
+        (Prefix.E, Prefix.E, Tag.ANY),
+        (Prefix.I, Prefix.I, Tag.DIFF),
+        (Prefix.I, Prefix.E, Tag.DIFF)
     }
-    accepts_as_inside = {
-        (Prefix.I, Prefix.E),
-        (Prefix.I, Prefix.I)
+    inside_patterns = {
+        (Prefix.I, Prefix.E, Tag.SAME),
+        (Prefix.I, Prefix.I, Tag.SAME)
     }
-    accepts_as_end = {
-        (Prefix.E, Prefix.ANY)
+    end_patterns = {
+        (Prefix.E, Prefix.ANY, Tag.ANY)
     }
-
-    def is_start(self, prev: 'Token'):
-        if self.prefix == Prefix.O:
-            return False
-        if prev.tag != self.tag:
-            return True
-        return super(IOE2, self).is_start(prev)
 
 
 class IOBES(Token):
     allowed_prefix = Prefix.I | Prefix.O | Prefix.B | Prefix.E | Prefix.S
-    accepts_as_start = {
-        (Prefix.ANY, Prefix.B),
-        (Prefix.ANY, Prefix.S)
+    start_patterns = {
+        (Prefix.ANY, Prefix.B, Tag.ANY),
+        (Prefix.ANY, Prefix.S, Tag.ANY)
     }
-    accepts_as_inside = {
-        (Prefix.B, Prefix.I),
-        (Prefix.B, Prefix.E),
-        (Prefix.I, Prefix.I),
-        (Prefix.I, Prefix.E)
+    inside_patterns = {
+        (Prefix.B, Prefix.I, Tag.SAME),
+        (Prefix.B, Prefix.E, Tag.SAME),
+        (Prefix.I, Prefix.I, Tag.SAME),
+        (Prefix.I, Prefix.E, Tag.SAME)
     }
-    accepts_as_end = {
-        (Prefix.S, Prefix.ANY),
-        (Prefix.E, Prefix.ANY)
+    end_patterns = {
+        (Prefix.S, Prefix.ANY, Tag.ANY),
+        (Prefix.E, Prefix.ANY, Tag.ANY)
     }
 
 

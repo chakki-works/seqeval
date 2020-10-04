@@ -1,104 +1,73 @@
-import unittest
-
 import pytest
 
-from seqeval.scheme import IOB2, IOBES, IOE2, Prefix, Tokens, Token
+from seqeval.scheme import IOB1, IOB2, IOBES, IOE1, IOE2, Prefix, Tokens, Token
 
 
-class TestToken(unittest.TestCase):
-
-    def test_extracts_prefix_I(self):
-        token = Token('I-MISC')
-        prefix = token.prefix
-        self.assertEqual(prefix, Prefix.I)
-
-    def test_extracts_prefix_B(self):
-        token = Token('B-MISC')
-        prefix = token.prefix
-        self.assertEqual(prefix, Prefix.B)
-
-    def test_extracts_prefix_O(self):
-        token = Token('O')
-        prefix = token.prefix
-        self.assertEqual(prefix, Prefix.O)
-
-    def test_extracts_prefix_I_if_suffix_is_set(self):
-        token = Token('MISC-I', suffix=True)
-        prefix = token.prefix
-        self.assertEqual(prefix, Prefix.I)
-
-    def test_extracts_prefix_B_if_suffix_is_set(self):
-        token = Token('MISC-B', suffix=True)
-        prefix = token.prefix
-        self.assertEqual(prefix, Prefix.B)
-
-    def test_extracts_prefix_O_if_suffix_is_set(self):
-        token = Token('O', suffix=True)
-        prefix = token.prefix
-        self.assertEqual(prefix, Prefix.O)
-
-    def test_extracts_tag(self):
-        token = Token('I-MISC')
-        tag = token.tag
-        self.assertEqual(tag, 'MISC')
-
-    def test_extracts_tag_if_suffix_is_set(self):
-        token = Token('MISC-I', suffix=True)
-        tag = token.tag
-        self.assertEqual(tag, 'MISC')
-
-    def test_extracts_tag_if_token_is_prefix_only(self):
-        token = Token('I')
-        tag = token.tag
-        self.assertEqual(tag, '_')
-
-    def test_extracts_underscore_as_tag_if_input_is_O(self):
-        token = Token('O')
-        tag = token.tag
-        self.assertEqual(tag, '_')
-
-    def test_extracts_tag_if_input_contains_two_underscore(self):
-        token = Token('I-ORG-COMPANY')
-        tag = token.tag
-        self.assertEqual(tag, 'ORG-COMPANY')
-
-    def test_extracts_tag_if_input_contains_two_underscore_with_suffix(self):
-        token = Token('ORG-COMPANY-I', suffix=True)
-        tag = token.tag
-        self.assertEqual(tag, 'ORG-COMPANY')
-
-    def test_extracts_non_ascii_tag(self):
-        token = Token('I-組織')
-        tag = token.tag
-        self.assertEqual(tag, '組織')
-
-    def test_raises_type_error_if_input_is_binary_string(self):
-        token = Token('I-組織'.encode('utf-8'))
-        with self.assertRaises(TypeError):
-            tag = token.tag
-
-    def test_raises_index_error_if_input_is_empty_string(self):
-        token = Token('')
-        with self.assertRaises(IndexError):
-            prefix = token.prefix
+@pytest.mark.parametrize(
+    'token, suffix, expected',
+    [
+        ('I-MISC', False, Prefix.I),
+        ('B-MISC', False, Prefix.B),
+        ('O', False, Prefix.O),
+        ('MISC-I', True, Prefix.I),
+        ('MISC-B', True, Prefix.B),
+        ('O', True, Prefix.O)
+    ]
+)
+def test_token_prefix(token, suffix, expected):
+    token = Token(token, suffix=suffix)
+    prefix = token.prefix
+    assert prefix == expected
 
 
-class TestIOB2Token(unittest.TestCase):
+@pytest.mark.parametrize(
+    'token, suffix, expected',
+    [
+        ('I-MISC', False, 'MISC'),
+        ('MISC-I', True, 'MISC'),
+        ('I', False, '_'),
+        ('O', False, '_'),
+        ('I-ORG-COMPANY', False, 'ORG-COMPANY'),
+        ('ORG-COMPANY-I', True, 'ORG-COMPANY'),
+        ('I-組織', False, '組織')
+    ]
+)
+def test_token_tag(token, suffix, expected):
+    token = Token(token, suffix=suffix)
+    tag = token.tag
+    assert tag == expected
 
-    def test_invalid_prefix(self):
-        token = IOB2('T')
-        with self.assertRaises(KeyError):
-            prefix = token.prefix
 
-    def test_validate_invalid_prefix(self):
-        token = IOB2('E')
-        with self.assertRaises(ValueError):
-            token.is_valid()
+def expects_start_inside_end_to_be_correct(prev, token, expected, scheme):
+    prev = scheme(prev)
+    token = scheme(token)
+    is_start = token.is_start(prev)
+    is_inside = token.is_inside(prev)
+    is_end = token.is_end(prev)
+    actual = [is_start, is_inside, is_end]
+    assert actual == expected
 
-    def test_validate_valid_prefix(self):
-        token = IOB2('B')
-        is_valid = token.is_valid()
-        self.assertTrue(is_valid)
+
+@pytest.mark.parametrize(
+    'prev, token, expected',
+    [
+        ('O', 'O', [False, False, False]),
+        ('O', 'I-PER', [True, False, False]),
+        ('O', 'B-PER', [False, False, False]),
+        ('I-PER', 'O', [False, False, True]),
+        ('I-PER', 'I-PER', [False, True, False]),
+        ('I-PER', 'I-ORG', [True, False, True]),
+        ('I-PER', 'B-PER', [True, False, True]),
+        ('I-PER', 'B-ORG', [False, False, True]),
+        ('B-PER', 'O', [False, False, True]),
+        ('B-PER', 'I-PER', [False, True, False]),
+        ('B-PER', 'I-ORG', [True, False, True]),
+        ('B-PER', 'B-PER', [True, False, True]),
+        ('B-PER', 'B-ORG', [False, False, False])
+    ]
+)
+def test_iob1_start_inside_end(prev, token, expected):
+    expects_start_inside_end_to_be_correct(prev, token, expected, IOB1)
 
 
 @pytest.mark.parametrize(
@@ -119,16 +88,30 @@ class TestIOB2Token(unittest.TestCase):
         ('B-PER', 'B-ORG', [True, False, True])
     ]
 )
-class TestIOB2Token:
+def test_iob2_start_inside_end(prev, token, expected):
+    expects_start_inside_end_to_be_correct(prev, token, expected, IOB2)
 
-    def test_start_inside_end(self, prev, token, expected):
-        prev = IOB2(prev)
-        token = IOB2(token)
-        is_start = token.is_start(prev)
-        is_inside = token.is_inside(prev)
-        is_end = token.is_end(prev)
-        actual = [is_start, is_inside, is_end]
-        assert actual == expected
+
+@pytest.mark.parametrize(
+    'prev, token, expected',
+    [
+        ('O', 'O', [False, False, False]),
+        ('O', 'I-PER', [True, False, False]),
+        ('O', 'E-PER', [False, False, False]),
+        ('I-PER', 'O', [False, False, True]),
+        ('I-PER', 'I-PER', [False, True, False]),
+        ('I-PER', 'I-ORG', [True, False, True]),
+        ('I-PER', 'E-PER', [False, True, False]),
+        ('I-PER', 'E-ORG', [False, False, True]),
+        ('E-PER', 'O', [False, False, False]),
+        ('E-PER', 'I-PER', [True, False, True]),
+        ('E-PER', 'I-ORG', [True, False, False]),
+        ('E-PER', 'E-PER', [True, False, True]),
+        ('E-PER', 'E-ORG', [False, False, False])
+    ]
+)
+def test_ioe1_start_inside_end(prev, token, expected):
+    expects_start_inside_end_to_be_correct(prev, token, expected, IOE1)
 
 
 @pytest.mark.parametrize(
@@ -149,16 +132,8 @@ class TestIOB2Token:
         ('E-PER', 'E-ORG', [True, False, True])
     ]
 )
-class TestIOE2Token:
-
-    def test_start_inside_end(self, prev, token, expected):
-        prev = IOE2(prev)
-        token = IOE2(token)
-        is_start = token.is_start(prev)
-        is_inside = token.is_inside(prev)
-        is_end = token.is_end(prev)
-        actual = [is_start, is_inside, is_end]
-        assert actual == expected
+def test_start_inside_end(prev, token, expected):
+    expects_start_inside_end_to_be_correct(prev, token, expected, IOE2)
 
 
 @pytest.mark.parametrize(
@@ -194,16 +169,35 @@ class TestIOE2Token:
         ('S-PER', 'S-PER', [True, False, True])
     ]
 )
-class TestIOBESToken:
+def test_iobes_start_inside_end(prev, token, expected):
+    expects_start_inside_end_to_be_correct(prev, token, expected, IOBES)
 
-    def test_start_inside_end(self, prev, token, expected):
-        prev = IOBES(prev)
-        token = IOBES(token)
-        is_start = token.is_start(prev)
-        is_inside = token.is_inside(prev)
-        is_end = token.is_end(prev)
-        actual = [is_start, is_inside, is_end]
-        assert actual == expected
+
+@pytest.mark.parametrize(
+    'tokens, expected',
+    [
+        ([], []),
+        (['B-PER'], []),
+        (['I-PER'], [('PER', 0, 1)]),
+        (['O'], []),
+        (['O', 'I-PER'], [('PER', 1, 2)]),
+        (['O', 'B-PER'], []),
+        (['I-PER', 'O'], [('PER', 0, 1)]),
+        (['I-PER', 'I-PER'], [('PER', 0, 2)]),
+        (['I-PER', 'I-ORG'], [('PER', 0, 1), ('ORG', 1, 2)]),
+        (['I-PER', 'B-PER'], [('PER', 0, 1), ('PER', 1, 2)]),
+        (['I-PER', 'B-ORG'], [('PER', 0, 1)]),
+        (['B-PER', 'O'], []),
+        (['B-PER', 'I-PER'], []),
+        (['B-PER', 'I-ORG'], [('ORG', 1, 2)]),
+        (['B-PER', 'B-PER'], [('PER', 1, 2)]),
+        (['B-PER', 'B-ORG'], [])
+    ]
+)
+def test_iob1_tokens(tokens, expected):
+    tokens = Tokens(tokens, IOB1)
+    entities = tokens.entities
+    assert entities == expected
 
 
 @pytest.mark.parametrize(
@@ -229,6 +223,33 @@ class TestIOBESToken:
 )
 def test_iob2_tokens(tokens, expected):
     tokens = Tokens(tokens, IOB2)
+    entities = tokens.entities
+    assert entities == expected
+
+
+@pytest.mark.parametrize(
+    'tokens, expected',
+    [
+        ([], []),
+        (['E-PER'], []),
+        (['I-PER'], [('PER', 0, 1)]),
+        (['O'], []),
+        (['O', 'I-PER'], [('PER', 1, 2)]),
+        (['O', 'E-PER'], []),
+        (['I-PER', 'O'], [('PER', 0, 1)]),
+        (['I-PER', 'I-PER'], [('PER', 0, 2)]),
+        (['I-PER', 'I-ORG'], [('PER', 0, 1), ('ORG', 1, 2)]),
+        (['I-PER', 'E-PER'], []),
+        (['I-PER', 'E-ORG'], [('PER', 0, 1)]),
+        (['E-PER', 'O'], []),
+        (['E-PER', 'I-PER'], [('PER', 1, 2)]),
+        (['E-PER', 'I-ORG'], [('ORG', 1, 2)]),
+        (['E-PER', 'E-PER'], []),
+        (['E-PER', 'E-ORG'], [])
+    ]
+)
+def test_ioe1_tokens(tokens, expected):
+    tokens = Tokens(tokens, IOE1)
     entities = tokens.entities
     assert entities == expected
 
@@ -302,6 +323,58 @@ def test_iobes_tokens(tokens, expected):
     tokens = Tokens(tokens, IOBES)
     entities = tokens.entities
     assert entities == expected
+
+
+class TestToken:
+
+    def test_raises_type_error_if_input_is_binary_string(self):
+        token = Token('I-組織'.encode('utf-8'))
+        with pytest.raises(TypeError):
+            tag = token.tag
+
+    def test_raises_index_error_if_input_is_empty_string(self):
+        token = Token('')
+        with pytest.raises(IndexError):
+            prefix = token.prefix
+
+
+class TestIOB2Token:
+
+    def test_invalid_prefix(self):
+        token = IOB2('T')
+        with pytest.raises(KeyError):
+            prefix = token.prefix
+
+
+@pytest.mark.parametrize(
+    'token, scheme',
+    [
+        ('I', IOB1), ('O', IOB1), ('B', IOB1),
+        ('I', IOB2), ('O', IOB2), ('B', IOB2),
+        ('I', IOE1), ('O', IOE1), ('E', IOE1),
+        ('I', IOE2), ('O', IOE2), ('E', IOE2),
+        ('I', IOBES), ('O', IOBES), ('B', IOBES), ('E', IOBES), ('S', IOBES)
+    ]
+)
+def test_valid_prefix(token, scheme):
+    token = scheme(token)
+    is_valid = token.is_valid
+    assert is_valid
+
+
+@pytest.mark.parametrize(
+    'token, scheme',
+    [
+        ('E', IOB1), ('S', IOB1),
+        ('E', IOB2), ('S', IOB2),
+        ('B', IOE1), ('S', IOE1),
+        ('B', IOE2), ('S', IOE2)
+    ]
+)
+def test_invalid_prefix(token, scheme):
+    token = scheme(token)
+    with pytest.raises(ValueError):
+        token.is_valid()
 
 
 class TestTokens:
