@@ -1,6 +1,6 @@
 import pytest
 
-from seqeval.scheme import IOB1, IOB2, IOBES, IOE1, IOE2, Prefix, Tokens, Token
+from seqeval.scheme import IOB1, IOB2, IOBES, IOE1, IOE2, Prefix, Tokens, Token, auto_detect
 
 
 @pytest.mark.parametrize(
@@ -521,3 +521,33 @@ class TestTokens:
         tokens = Tokens(['B-PER', 'E-PER', 'S-PER'], IOB2)
         with pytest.raises(ValueError):
             entities = tokens.entities
+
+
+class TestAutoDetect:
+
+    @pytest.mark.parametrize(
+        'sequences, expected',
+        [
+            ([['B', 'I', 'O']], IOB2),
+            ([['B', 'I']], IOB2),
+            ([['I', 'O', 'E']], IOE2),
+            ([['I', 'E']], IOE2),
+            ([['I', 'O', 'B', 'E', 'S']], IOBES),
+            ([['I', 'B', 'E', 'S']], IOBES)
+         ]
+    )
+    def test_valid_scheme(self, sequences, expected):
+        scheme = auto_detect(sequences)
+        assert scheme == expected
+
+    @pytest.mark.parametrize(
+        'sequences, expected',
+        [
+            ([['I', 'O']], IOB2),
+            ([['H']], IOB2)
+        ]
+    )
+    def test_invalid_scheme(self, sequences, expected):
+        with pytest.raises(ValueError):
+            scheme = auto_detect(sequences)
+

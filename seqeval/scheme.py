@@ -248,3 +248,27 @@ class Tokens:
         token = self.tokens[i]
         prev = self.tokens[i - 1]
         return token.is_end(prev)
+
+
+def auto_detect(sequences, suffix=False, delimiter='-'):
+    prefixes = set()
+    error_message = 'This scheme is not supported: {}'
+    for tokens in sequences:
+        for token in tokens:
+            token = Token(token, suffix=suffix, delimiter=delimiter)
+            try:
+                prefixes.add(token.prefix)
+            except KeyError:
+                raise ValueError(error_message.format(token))
+
+    iob_prefixes = {Prefix.I, Prefix.O, Prefix.B}
+    ioe_prefixes = {Prefix.I, Prefix.O, Prefix.E}
+    iobes_prefixes = {Prefix.I, Prefix.O, Prefix.B, Prefix.E, Prefix.S}
+    if prefixes == iob_prefixes or prefixes == iob_prefixes - {Prefix.O}:
+        return IOB2
+    elif prefixes == ioe_prefixes or prefixes == ioe_prefixes - {Prefix.O}:
+        return IOE2
+    elif prefixes == iobes_prefixes or prefixes == iobes_prefixes - {Prefix.O}:
+        return IOBES
+    else:
+        raise ValueError(error_message.format(prefixes))
