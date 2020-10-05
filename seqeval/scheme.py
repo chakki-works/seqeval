@@ -106,7 +106,7 @@ class IOB1(Token):
     start_patterns = {
         (Prefix.O, Prefix.I, Tag.ANY),
         (Prefix.I, Prefix.I, Tag.DIFF),
-        (Prefix.B, Prefix.I, Tag.DIFF),
+        (Prefix.B, Prefix.I, Tag.ANY),
         (Prefix.I, Prefix.B, Tag.SAME),
         (Prefix.B, Prefix.B, Tag.SAME)
     }
@@ -115,8 +115,9 @@ class IOB1(Token):
         (Prefix.I, Prefix.I, Tag.SAME)
     }
     end_patterns = {
-        (Prefix.I, Prefix.ANY, Tag.DIFF),
-        (Prefix.I, Prefix.B, Tag.SAME),
+        (Prefix.I, Prefix.I, Tag.DIFF),
+        (Prefix.I, Prefix.O, Tag.ANY),
+        (Prefix.I, Prefix.B, Tag.ANY),
         (Prefix.B, Prefix.O, Tag.ANY),
         (Prefix.B, Prefix.I, Tag.DIFF),
         (Prefix.B, Prefix.B, Tag.SAME)
@@ -136,7 +137,9 @@ class IOE1(Token):
         (Prefix.I, Prefix.E, Tag.SAME)
     }
     end_patterns = {
-        (Prefix.I, Prefix.ANY, Tag.DIFF),
+        (Prefix.I, Prefix.I, Tag.DIFF),
+        (Prefix.I, Prefix.O, Tag.ANY),
+        (Prefix.I, Prefix.E, Tag.DIFF),
         (Prefix.E, Prefix.I, Tag.SAME),
         (Prefix.E, Prefix.E, Tag.SAME)
     }

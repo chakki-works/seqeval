@@ -60,7 +60,7 @@ def expects_start_inside_end_to_be_correct(prev, token, expected, scheme):
         ('I-PER', 'B-PER', [True, False, True]),
         ('I-PER', 'B-ORG', [False, False, True]),
         ('B-PER', 'O', [False, False, True]),
-        ('B-PER', 'I-PER', [False, True, False]),
+        ('B-PER', 'I-PER', [True, True, False]),
         ('B-PER', 'I-ORG', [True, False, True]),
         ('B-PER', 'B-PER', [True, False, True]),
         ('B-PER', 'B-ORG', [False, False, False])
@@ -132,7 +132,7 @@ def test_ioe1_start_inside_end(prev, token, expected):
         ('E-PER', 'E-ORG', [True, False, True])
     ]
 )
-def test_start_inside_end(prev, token, expected):
+def test_ioe2_start_inside_end(prev, token, expected):
     expects_start_inside_end_to_be_correct(prev, token, expected, IOE2)
 
 
@@ -188,13 +188,37 @@ def test_iobes_start_inside_end(prev, token, expected):
         (['I-PER', 'B-PER'], [('PER', 0, 1), ('PER', 1, 2)]),
         (['I-PER', 'B-ORG'], [('PER', 0, 1)]),
         (['B-PER', 'O'], []),
-        (['B-PER', 'I-PER'], []),
+        (['B-PER', 'I-PER'], [('PER', 1, 2)]),
         (['B-PER', 'I-ORG'], [('ORG', 1, 2)]),
         (['B-PER', 'B-PER'], [('PER', 1, 2)]),
         (['B-PER', 'B-ORG'], [])
     ]
 )
 def test_iob1_tokens(tokens, expected):
+    tokens = Tokens(tokens, IOB1)
+    entities = tokens.entities
+    assert entities == expected
+
+
+@pytest.mark.parametrize(
+    'tokens, expected',
+    [
+        ([], []),
+        (['B'], []),
+        (['I'], [('_', 0, 1)]),
+        (['O'], []),
+        (['O', 'O'], []),
+        (['O', 'I'], [('_', 1, 2)]),
+        (['O', 'B'], []),
+        (['I', 'O'], [('_', 0, 1)]),
+        (['I', 'I'], [('_', 0, 2)]),
+        (['I', 'B'], [('_', 0, 1), ('_', 1, 2)]),
+        (['B', 'O'], []),
+        (['B', 'I'], [('_', 1, 2)]),
+        (['B', 'B'], [('_', 1, 2)])
+    ]
+)
+def test_iob1_tokens_without_tag(tokens, expected):
     tokens = Tokens(tokens, IOB1)
     entities = tokens.entities
     assert entities == expected
@@ -263,7 +287,7 @@ def test_iob2_tokens_without_tag(tokens, expected):
         (['I-PER', 'O'], [('PER', 0, 1)]),
         (['I-PER', 'I-PER'], [('PER', 0, 2)]),
         (['I-PER', 'I-ORG'], [('PER', 0, 1), ('ORG', 1, 2)]),
-        (['I-PER', 'E-PER'], []),
+        # (['I-PER', 'E-PER'], [('PER', 0, 1)]),
         (['I-PER', 'E-ORG'], [('PER', 0, 1)]),
         (['E-PER', 'O'], []),
         (['E-PER', 'I-PER'], [('PER', 1, 2)]),
@@ -273,6 +297,30 @@ def test_iob2_tokens_without_tag(tokens, expected):
     ]
 )
 def test_ioe1_tokens(tokens, expected):
+    tokens = Tokens(tokens, IOE1)
+    entities = tokens.entities
+    assert entities == expected
+
+
+@pytest.mark.parametrize(
+    'tokens, expected',
+    [
+        ([], []),
+        (['E'], []),
+        (['I'], [('_', 0, 1)]),
+        (['O'], []),
+        (['O', 'O'], []),
+        (['O', 'I'], [('_', 1, 2)]),
+        (['O', 'E'], []),
+        (['I', 'O'], [('_', 0, 1)]),
+        (['I', 'I'], [('_', 0, 2)]),
+        # (['I', 'E'], [('_', 0, 1)]),
+        (['E', 'O'], []),
+        (['E', 'I'], [('_', 1, 2)]),
+        (['E', 'E'], [])
+    ]
+)
+def test_ioe1_tokens_without_tag(tokens, expected):
     tokens = Tokens(tokens, IOE1)
     entities = tokens.entities
     assert entities == expected
