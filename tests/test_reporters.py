@@ -1,5 +1,5 @@
 import pytest
-from seqeval.reporters import DictReporter, StringReporter
+from seqeval.reporters import DictReporter
 
 
 @pytest.mark.parametrize(

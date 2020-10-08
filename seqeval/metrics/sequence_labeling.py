@@ -12,6 +12,8 @@ import warnings
 
 import numpy as np
 
+from seqeval.reporters import DictReporter, StringReporter
+
 
 def get_entities(seq, suffix=False):
     """Gets entities from sequence.
@@ -343,16 +345,11 @@ def classification_report(y_true, y_pred, digits=2, suffix=False, output_dict=Fa
     avg_types = ['micro avg', 'macro avg', 'weighted avg']
 
     if output_dict:
-        report_dict = dict()
+        reporter = DictReporter()
     else:
         avg_width = max([len(x) for x in avg_types])
         width = max(name_width, avg_width, digits)
-        headers = ["precision", "recall", "f1-score", "support"]
-        head_fmt = u'{:>{width}s} ' + u' {:>9}' * len(headers)
-        report = head_fmt.format(u'', *headers, width=width)
-        report += u'\n\n'
-
-        row_fmt = u'{:>{width}s} ' + u' {:>9.{digits}f}' * 3 + u' {:>9}\n'
+        reporter = StringReporter(width=width, digits=digits)
 
     ps, rs, f1s, s = [], [], [], []
     for type_name in sorted(d1.keys()):
@@ -366,47 +363,33 @@ def classification_report(y_true, y_pred, digits=2, suffix=False, output_dict=Fa
         r = nb_correct / nb_true if nb_true > 0 else 0
         f1 = 2 * p * r / (p + r) if p + r > 0 else 0
 
-        if output_dict:
-            report_dict[type_name] = {'precision': p, 'recall': r, 'f1-score': f1, 'support': nb_true}
-        else:
-            report += row_fmt.format(*[type_name, p, r, f1, nb_true], width=width, digits=digits)
+        reporter.write(type_name, p, r, f1, nb_true)
 
         ps.append(p)
         rs.append(r)
         f1s.append(f1)
         s.append(nb_true)
 
-    if not output_dict:
-        report += u'\n'
+    reporter.write_blank()
 
-    # compute averages
     nb_true = np.sum(s)
 
     for avg_type in avg_types:
         if avg_type == 'micro avg':
-            # micro average
             p = precision_score(y_true, y_pred, suffix=suffix)
             r = recall_score(y_true, y_pred, suffix=suffix)
             f1 = f1_score(y_true, y_pred, suffix=suffix)
         elif avg_type == 'macro avg':
-            # macro average
             p = np.average(ps)
             r = np.average(rs)
             f1 = np.average(f1s)
         elif avg_type == 'weighted avg':
-            # weighted average
             p = np.average(ps, weights=s)
             r = np.average(rs, weights=s)
             f1 = np.average(f1s, weights=s)
         else:
             assert False, "unexpected average: {}".format(avg_type)
+        reporter.write(avg_type, p, r, f1, nb_true)
+    reporter.write_blank()
 
-        if output_dict:
-            report_dict[avg_type] = {'precision': p, 'recall': r, 'f1-score': f1, 'support': nb_true}
-        else:
-            report += row_fmt.format(*[avg_type, p, r, f1, nb_true], width=width, digits=digits)
-
-    if output_dict:
-        return report_dict
-    else:
-        return report
+    return reporter.report()
