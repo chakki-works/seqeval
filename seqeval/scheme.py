@@ -268,7 +268,7 @@ class Entities:
 
     def __init__(self, sequences: List[List[str]], scheme: Type[Token], suffix: bool = False, delimiter: str = '-'):
         self.entities = [
-            Tokens(seq, scheme=scheme, suffix=suffix, delimiter=delimiter).entities
+            Tokens(seq, scheme=scheme, suffix=suffix, delimiter=delimiter, sent_id=sent_id).entities
             for sent_id, seq in enumerate(sequences)
         ]
 

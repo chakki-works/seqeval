@@ -1,6 +1,43 @@
 import pytest
 
-from seqeval.scheme import IOB1, IOB2, IOBES, IOE1, IOE2, Prefix, Tokens, Token, auto_detect
+from seqeval.scheme import IOB1, IOB2, IOBES, IOE1, IOE2, Prefix, Tokens, Token, auto_detect, Entity, Entities
+
+
+def test_entity_repr():
+    data = (0, 0, 0, 0)
+    entity = Entity(*data)
+    assert str(data) == str(entity)
+
+
+@pytest.mark.parametrize(
+    'data1, data2, expected',
+    [
+        ((0, 0, 0, 0), (0, 0, 0, 0), True),
+        ((1, 0, 0, 0), (0, 0, 0, 0), False),
+        ((0, 1, 0, 0), (0, 0, 0, 0), False),
+        ((0, 0, 1, 0), (0, 0, 0, 0), False),
+        ((0, 0, 0, 1), (0, 0, 0, 0), False)
+    ]
+)
+def test_entity_equality(data1, data2, expected):
+    entity1 = Entity(*data1)
+    entity2 = Entity(*data2)
+    is_equal = entity1 == entity2
+    assert is_equal == expected
+
+
+@pytest.mark.parametrize(
+    'sequences, tag_name, expected',
+    [
+        ([['B-PER', 'B-ORG']], '', set()),
+        ([['B-PER', 'B-ORG']], 'ORG', {Entity(0, 1, 2, 'ORG')}),
+        ([['B-PER', 'B-ORG']], 'PER', {Entity(0, 0, 1, 'PER')})
+    ]
+)
+def test_entities_filter(sequences, tag_name, expected):
+    entities = Entities(sequences, IOB2)
+    filtered = entities.filter(tag_name)
+    assert filtered == expected
 
 
 @pytest.mark.parametrize(
