@@ -196,7 +196,7 @@ def test_iobes_start_inside_end(prev, token, expected):
 )
 def test_iob1_tokens(tokens, expected):
     tokens = Tokens(tokens, IOB1)
-    entities = tokens.entities
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
 
 
@@ -220,7 +220,7 @@ def test_iob1_tokens(tokens, expected):
 )
 def test_iob1_tokens_without_tag(tokens, expected):
     tokens = Tokens(tokens, IOB1)
-    entities = tokens.entities
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
 
 
@@ -247,7 +247,7 @@ def test_iob1_tokens_without_tag(tokens, expected):
 )
 def test_iob2_tokens(tokens, expected):
     tokens = Tokens(tokens, IOB2)
-    entities = tokens.entities
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
 
 
@@ -271,7 +271,7 @@ def test_iob2_tokens(tokens, expected):
 )
 def test_iob2_tokens_without_tag(tokens, expected):
     tokens = Tokens(tokens, IOB2)
-    entities = tokens.entities
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
 
 
@@ -298,7 +298,7 @@ def test_iob2_tokens_without_tag(tokens, expected):
 )
 def test_ioe1_tokens(tokens, expected):
     tokens = Tokens(tokens, IOE1)
-    entities = tokens.entities
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
 
 
@@ -322,7 +322,7 @@ def test_ioe1_tokens(tokens, expected):
 )
 def test_ioe1_tokens_without_tag(tokens, expected):
     tokens = Tokens(tokens, IOE1)
-    entities = tokens.entities
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
 
 
@@ -349,7 +349,7 @@ def test_ioe1_tokens_without_tag(tokens, expected):
 )
 def test_ioe2_tokens(tokens, expected):
     tokens = Tokens(tokens, IOE2)
-    entities = tokens.entities
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
 
 
@@ -373,7 +373,7 @@ def test_ioe2_tokens(tokens, expected):
 )
 def test_ioe2_tokens_without_tag(tokens, expected):
     tokens = Tokens(tokens, IOE2)
-    entities = tokens.entities
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
 
 
@@ -418,7 +418,7 @@ def test_ioe2_tokens_without_tag(tokens, expected):
 )
 def test_iobes_tokens(tokens, expected):
     tokens = Tokens(tokens, IOBES)
-    entities = tokens.entities
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
 
 
@@ -459,7 +459,7 @@ def test_iobes_tokens(tokens, expected):
 )
 def test_iobes_tokens_without_tag(tokens, expected):
     tokens = Tokens(tokens, IOBES)
-    entities = tokens.entities
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
 
 
