@@ -39,41 +39,23 @@ Behold, the power of seqeval:
 >>> accuracy_score(y_true, y_pred)
 0.80
 >>> classification_report(y_true, y_pred)
-             precision    recall  f1-score   support
+              precision    recall  f1-score   support
+        MISC       0.00      0.00      0.00         1
+         PER       1.00      1.00      1.00         1
 
-       MISC       0.00      0.00      0.00         1
-        PER       1.00      1.00      1.00         1
+   micro avg       0.50      0.50      0.50         2
+   macro avg       0.50      0.50      0.50         2
+weighted avg       0.50      0.50      0.50         2
 
-  micro avg       0.50      0.50      0.50         2
-  macro avg       0.50      0.50      0.50         2
-```
-
-### Keras Callback
-
-Seqeval provides a callback for Keras:
-
-```python
-from seqeval.callbacks import F1Metrics
-
-id2label = {0: '<PAD>', 1: 'B-LOC', 2: 'I-LOC'}
-callbacks = [F1Metrics(id2label)]
-model.fit(x, y, validation_data=(x_val, y_val), callbacks=callbacks)
 ```
 
 ## Installation
 To install seqeval, simply run:
 
 ```
-$ pip install seqeval[cpu]
-```
-
-If you want to install seqeval on GPU environment, please run:
-
-```bash
-$ pip install seqeval[gpu]
+$ pip install seqeval
 ```
 
 ## Requirement
 
 * numpy >= 1.14.0
-* tensorflow(optional)
