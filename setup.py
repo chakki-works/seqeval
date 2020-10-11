@@ -23,7 +23,7 @@ if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist bdist_wheel upload')
     sys.exit()
 
-required = ['numpy>=1.14.0']
+required = ['numpy==1.19.2', 'scikit-learn==0.23.2']
 
 setup(
     name=NAME,
