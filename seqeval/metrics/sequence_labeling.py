@@ -13,6 +13,7 @@ import warnings
 import numpy as np
 
 from seqeval.reporters import DictReporter, StringReporter
+from seqeval.metrics.v1 import classification_report as cr
 
 
 def get_entities(seq, suffix=False):
@@ -303,14 +304,41 @@ def performance_measure(y_true, y_pred):
     return performance_dict
 
 
-def classification_report(y_true, y_pred, digits=2, suffix=False, output_dict=False):
+def classification_report(y_true, y_pred,
+                          digits=2,
+                          suffix=False,
+                          output_dict=False,
+                          mode=None,
+                          sample_weight=None,
+                          zero_division='warn',
+                          scheme=None):
     """Build a text report showing the main classification metrics.
 
     Args:
         y_true : 2d array. Ground truth (correct) target values.
+
         y_pred : 2d array. Estimated targets as returned by a classifier.
+
         digits : int. Number of digits for formatting output floating point values.
+
         output_dict : bool(default=False). If True, return output as dict else str.
+
+        mode : str. If mode="strict", use new classification_report.
+
+        sample_weight : array-like of shape (n_samples,), default=None
+            Sample weights.
+
+        zero_division : "warn", 0 or 1, default="warn"
+            Sets the value to return when there is a zero division:
+               - recall: when there are no positive labels
+               - precision: when there are no positive predictions
+               - f-score: both
+
+            If set to "warn", this acts as 0, but warnings are also raised.
+
+        scheme : Token, [IOB2, IOE2, IOBES]
+
+        suffix : bool, False by default.
 
     Returns:
         report : string/dict. Summary of the precision, recall, F1 score for each class.
@@ -330,6 +358,16 @@ def classification_report(y_true, y_pred, digits=2, suffix=False, output_dict=Fa
        weighted avg       0.50      0.50      0.50         2
         <BLANKLINE>
     """
+    if mode == 'strict':
+        return cr(y_true, y_pred,
+                  digits=digits,
+                  output_dict=output_dict,
+                  sample_weight=sample_weight,
+                  zero_division=zero_division,
+                  scheme=scheme,
+                  suffix=suffix
+                  )
+
     true_entities = set(get_entities(y_true, suffix))
     pred_entities = set(get_entities(y_pred, suffix))
 
