@@ -81,6 +81,22 @@ def unique_labels(y_true: List[List[str]], y_pred: List[List[str]],
     return sorted(unique_tags)
 
 
+def check_consistent_length(y_true: List[List[str]], y_pred: List[List[str]]):
+    """Check that all arrays have consistent first and second dimensions.
+
+    Checks whether all objects in arrays have the same shape or length.
+
+    Args:
+        y_true : 2d array.
+        y_pred : 2d array.
+    """
+    len_true = list(map(len, y_true))
+    len_pred = list(map(len, y_pred))
+    is_list = set(map(type, y_true + y_pred))
+    if len(y_true) != len(y_pred) or len_true != len_pred or not is_list == {list}:
+        raise ValueError("Found input variables with inconsistent numbers of samples:\n{}\n{}".format(len_true, len_pred))
+
+
 def precision_recall_fscore_support(y_true: List[List[str]],
                                     y_pred: List[List[str]],
                                     *,
@@ -170,6 +186,15 @@ def precision_recall_fscore_support(y_true: List[List[str]],
         and ``UndefinedMetricWarning`` will be raised. This behavior can be
         modified with ``zero_division``.
     """
+    if beta < 0:
+        raise ValueError('beta should be >=0 in the F-beta score')
+
+    average_options = (None, 'micro', 'macro', 'weighted')
+    if average not in average_options:
+        raise ValueError('average has to be one of {}'.format(average_options))
+
+    check_consistent_length(y_true, y_pred)
+
     target_names = unique_labels(y_true, y_pred, scheme, suffix)
     entities_true = Entities(y_true, scheme, suffix)
     entities_pred = Entities(y_pred, scheme, suffix)
@@ -251,7 +276,6 @@ def precision_recall_fscore_support(y_true: List[List[str]],
         weights = None
 
     if average is not None:
-        assert average != 'binary' or len(precision) == 1
         precision = np.average(precision, weights=weights)
         recall = np.average(recall, weights=weights)
         f_score = np.average(f_score, weights=weights)
@@ -268,7 +292,7 @@ def classification_report(y_true: List[List[str]],
                           output_dict: bool = False,
                           zero_division: str = 'warn',
                           suffix: bool = False,
-                          scheme: Type[Token] = auto_detect) -> Union[str, dict]:
+                          scheme: Type[Token] = None) -> Union[str, dict]:
     """Build a text report showing the main tagging metrics.
 
     Args:
@@ -313,7 +337,7 @@ def classification_report(y_true: List[List[str]],
        weighted avg       0.50      0.50      0.50         2
         <BLANKLINE>
     """
-    if not isinstance(scheme, Token):
+    if scheme is None or not issubclass(scheme, Token):
         scheme = auto_detect(y_true, suffix)
     target_names = unique_labels(y_true, y_pred, scheme, suffix)
 

@@ -567,10 +567,21 @@ class TestAutoDetect:
         [
             ([['B', 'I', 'O']], IOB2),
             ([['B', 'I']], IOB2),
+            ([['B', 'O']], IOB2),
+            ([['B']], IOB2),
             ([['I', 'O', 'E']], IOE2),
             ([['I', 'E']], IOE2),
+            ([['E', 'O']], IOE2),
+            ([['E']], IOE2),
             ([['I', 'O', 'B', 'E', 'S']], IOBES),
-            ([['I', 'B', 'E', 'S']], IOBES)
+            ([['I', 'B', 'E', 'S']], IOBES),
+            ([['I', 'O', 'B', 'E']], IOBES),
+            ([['O', 'B', 'E', 'S']], IOBES),
+            ([['I', 'B', 'E']], IOBES),
+            ([['B', 'E', 'S']], IOBES),
+            ([['O', 'B', 'E']], IOBES),
+            ([['B', 'E']], IOBES),
+            ([['S']], IOBES)
          ]
     )
     def test_valid_scheme(self, sequences, expected):
