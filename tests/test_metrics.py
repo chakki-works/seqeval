@@ -7,15 +7,6 @@ import random
 import subprocess
 import unittest
 
-import numpy
-from keras import Sequential
-from keras.backend import constant
-from keras.layers import Lambda
-from keras.preprocessing.sequence import pad_sequences
-from keras.preprocessing.text import Tokenizer
-from keras.utils import to_categorical
-
-from seqeval.callbacks import F1Metrics
 from seqeval.metrics import (f1_score, accuracy_score, classification_report,
                              precision_score, recall_score,
                              performance_measure)
@@ -119,43 +110,6 @@ class TestMetrics(unittest.TestCase):
                     self.assertLess(abs(f1_pred - f1_true), 1e-4)
 
         os.remove(filepath)
-
-    def test_keras_callback(self):
-        expected_score = f1_score(self.y_true, self.y_pred)
-        tokenizer = Tokenizer(lower=False)
-        tokenizer.fit_on_texts(self.y_true)
-        maxlen = max((len(row) for row in self.y_true))
-
-        def prepare(y, padding):
-            indexes = tokenizer.texts_to_sequences(y)
-            padded = pad_sequences(indexes, maxlen=maxlen, padding=padding, truncating=padding)
-            categorical = to_categorical(padded)
-            return categorical
-
-        for padding in ('pre', 'post'):
-            callback = F1Metrics(id2label=tokenizer.index_word)
-            y_true_cat = prepare(self.y_true, padding)
-            y_pred_cat = prepare(self.y_pred, padding)
-
-            input_shape = (1,)
-            layer = Lambda(lambda _: constant(y_pred_cat), input_shape=input_shape)
-            fake_model = Sequential(layers=[layer])
-            callback.set_model(fake_model)
-
-            X = numpy.zeros((y_true_cat.shape[0], 1))
-
-            # Verify that the callback translates sequences correctly by itself
-            y_true_cb, y_pred_cb = callback.predict(X, y_true_cat)
-            self.assertEqual(y_pred_cb, self.y_pred)
-            self.assertEqual(y_true_cb, self.y_true)
-
-            # Verify that the callback stores the correct number in logs
-            fake_model.compile(optimizer='adam', loss='categorical_crossentropy')
-            history = fake_model.fit(x=X, batch_size=y_true_cat.shape[0], y=y_true_cat,
-                                     validation_data=(X, y_true_cat),
-                                     callbacks=[callback])
-            actual_score = history.history['f1'][0]
-            self.assertAlmostEqual(actual_score, expected_score)
 
     def load_labels(self, filename):
         y_true, y_pred = [], []

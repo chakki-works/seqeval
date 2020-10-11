@@ -1,25 +1,28 @@
 import enum
+from itertools import chain
 from typing import List, Set, Tuple, Type
 
 
 class Entity:
 
-    def __init__(self, start: int, end: int, tag: str):
+    def __init__(self, sent_id: int, start: int, end: int, tag: str):
+        self.sent_id = sent_id
         self.start = start
         self.end = end
         self.tag = tag
 
     def __repr__(self):
-        return '({}, {}, {})'.format(self.tag, self.start, self.end)
+        return '({}, {}, {}, {})'.format(self.sent_id, self.tag, self.start, self.end)
 
     def __eq__(self, other: 'Entity'):
-        return self.start == other.start and self.end == other.end and self.tag == other.tag
+        return self.sent_id == other.sent_id and self.start == other.start and\
+               self.end == other.end and self.tag == other.tag
 
     def __hash__(self):
         return hash(self.to_tuple())
 
     def to_tuple(self):
-        return self.tag, self.start, self.end
+        return self.sent_id, self.tag, self.start, self.end
 
 
 class Prefix(enum.Flag):
@@ -205,10 +208,12 @@ class IOBES(Token):
 
 class Tokens:
 
-    def __init__(self, tokens: List[str], scheme: Type[Token], suffix: bool = False, delimiter: str = '-'):
+    def __init__(self, tokens: List[str], scheme: Type[Token],
+                 suffix: bool = False, delimiter: str = '-', sent_id: int = None):
         self.tokens = [scheme(token, suffix=suffix, delimiter=delimiter) for token in tokens]
         self.scheme = scheme
         self.outside_token = scheme('O', suffix=suffix, delimiter=delimiter)
+        self.sent_id = sent_id
 
     @property
     def entities(self):
@@ -231,8 +236,8 @@ class Tokens:
             if token.is_start(prev):
                 end = self._forward(start=i + 1, prev=token)
                 if self._is_end(end):
-                    entity = Entity(start=i, end=end, tag=token.tag)
-                    entities.append(entity.to_tuple())
+                    entity = Entity(sent_id=self.sent_id, start=i, end=end, tag=token.tag)
+                    entities.append(entity)
                 i = end
             else:
                 i += 1
@@ -259,6 +264,26 @@ class Tokens:
         return tokens
 
 
+class Entities:
+
+    def __init__(self, sequences: List[List[str]], scheme: Type[Token], suffix: bool = False, delimiter: str = '-'):
+        self.entities = [
+            Tokens(seq, scheme=scheme, suffix=suffix, delimiter=delimiter, sent_id=sent_id).entities
+            for sent_id, seq in enumerate(sequences)
+        ]
+
+    def filter(self, tag_name: str):
+        entities = {entity for entity in chain(*self.entities) if entity.tag == tag_name}
+        return entities
+
+    @property
+    def unique_tags(self):
+        tags = {
+            entity.tag for entity in chain(*self.entities)
+        }
+        return tags
+
+
 def auto_detect(sequences: List[List[str]], suffix: bool = False, delimiter: str = '-'):
     """Detects scheme automatically.
 
@@ -277,14 +302,34 @@ def auto_detect(sequences: List[List[str]], suffix: bool = False, delimiter: str
             except KeyError:
                 raise ValueError(error_message.format(token))
 
-    iob_prefixes = {Prefix.I, Prefix.O, Prefix.B}
-    ioe_prefixes = {Prefix.I, Prefix.O, Prefix.E}
-    iobes_prefixes = {Prefix.I, Prefix.O, Prefix.B, Prefix.E, Prefix.S}
-    if prefixes == iob_prefixes or prefixes == iob_prefixes - {Prefix.O}:
+    allowed_iob2_prefixes = [
+        {Prefix.I, Prefix.O, Prefix.B},
+        {Prefix.I, Prefix.B},
+        {Prefix.B, Prefix.O},
+        {Prefix.B}
+    ]
+    allowed_ioe2_prefixes = [
+        {Prefix.I, Prefix.O, Prefix.E},
+        {Prefix.I, Prefix.E},
+        {Prefix.E, Prefix.O},
+        {Prefix.E}
+    ]
+    allowed_iobes_prefixes = [
+        {Prefix.I, Prefix.O, Prefix.B, Prefix.E, Prefix.S},
+        {Prefix.I, Prefix.B, Prefix.E, Prefix.S},
+        {Prefix.I, Prefix.O, Prefix.B, Prefix.E},
+        {Prefix.O, Prefix.B, Prefix.E, Prefix.S},
+        {Prefix.I, Prefix.B, Prefix.E},
+        {Prefix.B, Prefix.E, Prefix.S},
+        {Prefix.O, Prefix.B, Prefix.E},
+        {Prefix.B, Prefix.E},
+        {Prefix.S}
+    ]
+    if prefixes in allowed_iob2_prefixes:
         return IOB2
-    elif prefixes == ioe_prefixes or prefixes == ioe_prefixes - {Prefix.O}:
+    elif prefixes in allowed_ioe2_prefixes:
         return IOE2
-    elif prefixes == iobes_prefixes or prefixes == iobes_prefixes - {Prefix.O}:
+    elif prefixes in allowed_iobes_prefixes:
         return IOBES
     else:
         raise ValueError(error_message.format(prefixes))

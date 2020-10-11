@@ -1,6 +1,43 @@
 import pytest
 
-from seqeval.scheme import IOB1, IOB2, IOBES, IOE1, IOE2, Prefix, Tokens, Token, auto_detect
+from seqeval.scheme import IOB1, IOB2, IOBES, IOE1, IOE2, Prefix, Tokens, Token, auto_detect, Entity, Entities
+
+
+def test_entity_repr():
+    data = (0, 0, 0, 0)
+    entity = Entity(*data)
+    assert str(data) == str(entity)
+
+
+@pytest.mark.parametrize(
+    'data1, data2, expected',
+    [
+        ((0, 0, 0, 0), (0, 0, 0, 0), True),
+        ((1, 0, 0, 0), (0, 0, 0, 0), False),
+        ((0, 1, 0, 0), (0, 0, 0, 0), False),
+        ((0, 0, 1, 0), (0, 0, 0, 0), False),
+        ((0, 0, 0, 1), (0, 0, 0, 0), False)
+    ]
+)
+def test_entity_equality(data1, data2, expected):
+    entity1 = Entity(*data1)
+    entity2 = Entity(*data2)
+    is_equal = entity1 == entity2
+    assert is_equal == expected
+
+
+@pytest.mark.parametrize(
+    'sequences, tag_name, expected',
+    [
+        ([['B-PER', 'B-ORG']], '', set()),
+        ([['B-PER', 'B-ORG']], 'ORG', {Entity(0, 1, 2, 'ORG')}),
+        ([['B-PER', 'B-ORG']], 'PER', {Entity(0, 0, 1, 'PER')})
+    ]
+)
+def test_entities_filter(sequences, tag_name, expected):
+    entities = Entities(sequences, IOB2)
+    filtered = entities.filter(tag_name)
+    assert filtered == expected
 
 
 @pytest.mark.parametrize(
@@ -196,7 +233,7 @@ def test_iobes_start_inside_end(prev, token, expected):
 )
 def test_iob1_tokens(tokens, expected):
     tokens = Tokens(tokens, IOB1)
-    entities = tokens.entities
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
 
 
@@ -220,7 +257,7 @@ def test_iob1_tokens(tokens, expected):
 )
 def test_iob1_tokens_without_tag(tokens, expected):
     tokens = Tokens(tokens, IOB1)
-    entities = tokens.entities
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
 
 
@@ -247,7 +284,7 @@ def test_iob1_tokens_without_tag(tokens, expected):
 )
 def test_iob2_tokens(tokens, expected):
     tokens = Tokens(tokens, IOB2)
-    entities = tokens.entities
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
 
 
@@ -271,7 +308,7 @@ def test_iob2_tokens(tokens, expected):
 )
 def test_iob2_tokens_without_tag(tokens, expected):
     tokens = Tokens(tokens, IOB2)
-    entities = tokens.entities
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
 
 
@@ -298,7 +335,7 @@ def test_iob2_tokens_without_tag(tokens, expected):
 )
 def test_ioe1_tokens(tokens, expected):
     tokens = Tokens(tokens, IOE1)
-    entities = tokens.entities
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
 
 
@@ -322,7 +359,7 @@ def test_ioe1_tokens(tokens, expected):
 )
 def test_ioe1_tokens_without_tag(tokens, expected):
     tokens = Tokens(tokens, IOE1)
-    entities = tokens.entities
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
 
 
@@ -349,7 +386,7 @@ def test_ioe1_tokens_without_tag(tokens, expected):
 )
 def test_ioe2_tokens(tokens, expected):
     tokens = Tokens(tokens, IOE2)
-    entities = tokens.entities
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
 
 
@@ -373,7 +410,7 @@ def test_ioe2_tokens(tokens, expected):
 )
 def test_ioe2_tokens_without_tag(tokens, expected):
     tokens = Tokens(tokens, IOE2)
-    entities = tokens.entities
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
 
 
@@ -418,7 +455,7 @@ def test_ioe2_tokens_without_tag(tokens, expected):
 )
 def test_iobes_tokens(tokens, expected):
     tokens = Tokens(tokens, IOBES)
-    entities = tokens.entities
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
 
 
@@ -459,7 +496,7 @@ def test_iobes_tokens(tokens, expected):
 )
 def test_iobes_tokens_without_tag(tokens, expected):
     tokens = Tokens(tokens, IOBES)
-    entities = tokens.entities
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
 
 
@@ -530,10 +567,21 @@ class TestAutoDetect:
         [
             ([['B', 'I', 'O']], IOB2),
             ([['B', 'I']], IOB2),
+            ([['B', 'O']], IOB2),
+            ([['B']], IOB2),
             ([['I', 'O', 'E']], IOE2),
             ([['I', 'E']], IOE2),
+            ([['E', 'O']], IOE2),
+            ([['E']], IOE2),
             ([['I', 'O', 'B', 'E', 'S']], IOBES),
-            ([['I', 'B', 'E', 'S']], IOBES)
+            ([['I', 'B', 'E', 'S']], IOBES),
+            ([['I', 'O', 'B', 'E']], IOBES),
+            ([['O', 'B', 'E', 'S']], IOBES),
+            ([['I', 'B', 'E']], IOBES),
+            ([['B', 'E', 'S']], IOBES),
+            ([['O', 'B', 'E']], IOBES),
+            ([['B', 'E']], IOBES),
+            ([['S']], IOBES)
          ]
     )
     def test_valid_scheme(self, sequences, expected):

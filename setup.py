@@ -23,7 +23,7 @@ if sys.argv[-1] == 'publish':
     os.system('python setup.py sdist bdist_wheel upload')
     sys.exit()
 
-required = ['numpy>=1.14.0', 'Keras>=2.2.4']
+required = ['numpy==1.19.2', 'scikit-learn==0.23.2']
 
 setup(
     name=NAME,
@@ -38,8 +38,8 @@ setup(
     packages=find_packages(exclude=('tests',)),
     install_requires=required,
     extras_require={
-        'cpu': ['tensorflow>=1.13.1'],
-        'gpu': ['tensorflow-gpu'],
+        'cpu': [],
+        'gpu': [],
     },
     include_package_data=True,
     license=LICENSE,
