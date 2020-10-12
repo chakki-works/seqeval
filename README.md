@@ -9,11 +9,13 @@ which can be used for measuring the performance of a system that has processed t
 ## Support features
 
 seqeval supports following formats:
-* IOB1
-* IOB2
-* IOE1
-* IOE2
-* IOBES
+
+- IOB1
+- IOB2
+- IOE1
+- IOE2
+- IOBES
+- BILOU
 
 and supports following metrics:
 
@@ -55,7 +57,7 @@ weighted avg       0.50      0.50      0.50         2
 If you want to explicitly specify the evaluation scheme, use `mode='strict'`:
 
 ```python
->>> from seqeval.scheme import IOB2
+>>> from seqeval.scheme import IOB2, IOBES, BILOU
 >>> classification_report(y_true, y_pred, mode='strict', scheme=IOB2)
               precision    recall  f1-score   support
 
