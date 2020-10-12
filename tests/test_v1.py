@@ -1,9 +1,11 @@
 import numpy as np
 import pytest
 from sklearn.exceptions import UndefinedMetricWarning
-from sklearn.utils._testing import assert_array_almost_equal, assert_array_equal
+from sklearn.utils._testing import (assert_array_almost_equal,
+                                    assert_array_equal)
 
-from seqeval.metrics.v1 import unique_labels, precision_recall_fscore_support, classification_report
+from seqeval.metrics.v1 import (classification_report,
+                                precision_recall_fscore_support, unique_labels)
 from seqeval.scheme import IOB2
 
 

@@ -3,17 +3,15 @@ Functions named as ``*_score`` return a scalar value to maximize: the higher
 the better
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
-from collections import defaultdict
 import warnings
+from collections import defaultdict
 
 import numpy as np
 
-from seqeval.reporters import DictReporter, StringReporter
 from seqeval.metrics.v1 import classification_report as cr
+from seqeval.reporters import DictReporter, StringReporter
 
 
 def get_entities(seq, suffix=False):
@@ -37,11 +35,11 @@ def get_entities(seq, suffix=False):
             return
 
         if suffix:
-            if not (chunk.endswith('-B') or chunk.endswith('-I') or chunk.endswith('-E') or chunk.endswith('-S')):
+            if not chunk.endswith(('-B', '-I', '-E', '-S')):
                 warnings.warn('{} seems not to be NE tag.'.format(chunk))
 
         else:
-            if not (chunk.startswith('B-') or chunk.startswith('I-') or chunk.startswith('E-') or chunk.startswith('S-')):
+            if not chunk.startswith(('B-', 'I-', 'E-', 'S-')):
                 warnings.warn('{} seems not to be NE tag.'.format(chunk))
 
     # for nested list
@@ -63,7 +61,7 @@ def get_entities(seq, suffix=False):
             type_ = chunk[1:].split('-', maxsplit=1)[-1] or '_'
 
         if end_of_chunk(prev_tag, tag, prev_type, type_):
-            chunks.append((prev_type, begin_offset, i-1))
+            chunks.append((prev_type, begin_offset, i - 1))
         if start_of_chunk(prev_tag, tag, prev_type, type_):
             begin_offset = i
         prev_tag = tag
@@ -86,15 +84,23 @@ def end_of_chunk(prev_tag, tag, prev_type, type_):
     """
     chunk_end = False
 
-    if prev_tag == 'E': chunk_end = True
-    if prev_tag == 'S': chunk_end = True
+    if prev_tag == 'E':
+        chunk_end = True
+    if prev_tag == 'S':
+        chunk_end = True
 
-    if prev_tag == 'B' and tag == 'B': chunk_end = True
-    if prev_tag == 'B' and tag == 'S': chunk_end = True
-    if prev_tag == 'B' and tag == 'O': chunk_end = True
-    if prev_tag == 'I' and tag == 'B': chunk_end = True
-    if prev_tag == 'I' and tag == 'S': chunk_end = True
-    if prev_tag == 'I' and tag == 'O': chunk_end = True
+    if prev_tag == 'B' and tag == 'B':
+        chunk_end = True
+    if prev_tag == 'B' and tag == 'S':
+        chunk_end = True
+    if prev_tag == 'B' and tag == 'O':
+        chunk_end = True
+    if prev_tag == 'I' and tag == 'B':
+        chunk_end = True
+    if prev_tag == 'I' and tag == 'S':
+        chunk_end = True
+    if prev_tag == 'I' and tag == 'O':
+        chunk_end = True
 
     if prev_tag != 'O' and prev_tag != '.' and prev_type != type_:
         chunk_end = True
@@ -116,15 +122,23 @@ def start_of_chunk(prev_tag, tag, prev_type, type_):
     """
     chunk_start = False
 
-    if tag == 'B': chunk_start = True
-    if tag == 'S': chunk_start = True
+    if tag == 'B':
+        chunk_start = True
+    if tag == 'S':
+        chunk_start = True
 
-    if prev_tag == 'E' and tag == 'E': chunk_start = True
-    if prev_tag == 'E' and tag == 'I': chunk_start = True
-    if prev_tag == 'S' and tag == 'E': chunk_start = True
-    if prev_tag == 'S' and tag == 'I': chunk_start = True
-    if prev_tag == 'O' and tag == 'E': chunk_start = True
-    if prev_tag == 'O' and tag == 'I': chunk_start = True
+    if prev_tag == 'E' and tag == 'E':
+        chunk_start = True
+    if prev_tag == 'E' and tag == 'I':
+        chunk_start = True
+    if prev_tag == 'S' and tag == 'E':
+        chunk_start = True
+    if prev_tag == 'S' and tag == 'I':
+        chunk_start = True
+    if prev_tag == 'O' and tag == 'E':
+        chunk_start = True
+    if prev_tag == 'O' and tag == 'I':
+        chunk_start = True
 
     if tag != 'O' and tag != '.' and prev_type != type_:
         chunk_start = True
@@ -195,7 +209,7 @@ def accuracy_score(y_true, y_pred):
         y_true = [item for sublist in y_true for item in sublist]
         y_pred = [item for sublist in y_pred for item in sublist]
 
-    nb_correct = sum(y_t==y_p for y_t, y_p in zip(y_true, y_pred))
+    nb_correct = sum(y_t == y_p for y_t, y_p in zip(y_true, y_pred))
     nb_true = len(y_true)
 
     score = nb_correct / nb_true

@@ -7,9 +7,9 @@ import random
 import subprocess
 import unittest
 
-from seqeval.metrics import (f1_score, accuracy_score, classification_report,
-                             precision_score, recall_score,
-                             performance_measure)
+from seqeval.metrics import (accuracy_score, classification_report, f1_score,
+                             performance_measure, precision_score,
+                             recall_score)
 from seqeval.metrics.sequence_labeling import get_entities
 
 
