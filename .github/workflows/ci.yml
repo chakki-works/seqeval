@@ -21,6 +21,9 @@ jobs:
     - name: Lint with flake8
       run: |
         pipenv run flake8
+    - name: Lint with isort
+      run: |
+        pipenv run isort
     - name: Test with pytest
       run: |
         pipenv run test
