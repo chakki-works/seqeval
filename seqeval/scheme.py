@@ -30,7 +30,9 @@ class Prefix(enum.Flag):
     B = enum.auto()
     E = enum.auto()
     S = enum.auto()
-    ANY = I | O | B | E | S
+    U = enum.auto()
+    L = enum.auto()
+    ANY = I | O | B | E | S | U | L
 
 
 class Tag(enum.Flag):
@@ -205,6 +207,24 @@ class IOBES(Token):
     }
 
 
+class BILOU(Token):
+    allowed_prefix = Prefix.B | Prefix.I | Prefix.L | Prefix.O | Prefix.U
+    start_patterns = {
+        (Prefix.ANY, Prefix.B, Tag.ANY),
+        (Prefix.ANY, Prefix.U, Tag.ANY)
+    }
+    inside_patterns = {
+        (Prefix.B, Prefix.I, Tag.SAME),
+        (Prefix.B, Prefix.L, Tag.SAME),
+        (Prefix.I, Prefix.I, Tag.SAME),
+        (Prefix.I, Prefix.L, Tag.SAME)
+    }
+    end_patterns = {
+        (Prefix.U, Prefix.ANY, Tag.ANY),
+        (Prefix.L, Prefix.ANY, Tag.ANY)
+    }
+
+
 class Tokens:
 
     def __init__(self, tokens: List[str], scheme: Type[Token],
@@ -324,11 +344,24 @@ def auto_detect(sequences: List[List[str]], suffix: bool = False, delimiter: str
         {Prefix.B, Prefix.E},
         {Prefix.S}
     ]
+    allowed_bilou_prefixes = [
+        {Prefix.I, Prefix.O, Prefix.B, Prefix.L, Prefix.U},
+        {Prefix.I, Prefix.B, Prefix.L, Prefix.U},
+        {Prefix.I, Prefix.O, Prefix.B, Prefix.L},
+        {Prefix.O, Prefix.B, Prefix.L, Prefix.U},
+        {Prefix.I, Prefix.B, Prefix.L},
+        {Prefix.B, Prefix.L, Prefix.U},
+        {Prefix.O, Prefix.B, Prefix.L},
+        {Prefix.B, Prefix.L},
+        {Prefix.U}
+    ]
     if prefixes in allowed_iob2_prefixes:
         return IOB2
     elif prefixes in allowed_ioe2_prefixes:
         return IOE2
     elif prefixes in allowed_iobes_prefixes:
         return IOBES
+    elif prefixes in allowed_bilou_prefixes:
+        return BILOU
     else:
         raise ValueError(error_message.format(prefixes))

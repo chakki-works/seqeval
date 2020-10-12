@@ -1,7 +1,7 @@
 import pytest
 
-from seqeval.scheme import (IOB1, IOB2, IOBES, IOE1, IOE2, Entities, Entity,
-                            Prefix, Token, Tokens, auto_detect)
+from seqeval.scheme import (BILOU, IOB1, IOB2, IOBES, IOE1, IOE2, Entities,
+                            Entity, Prefix, Token, Tokens, auto_detect)
 
 
 def test_entity_repr():
@@ -209,6 +209,43 @@ def test_ioe2_start_inside_end(prev, token, expected):
 )
 def test_iobes_start_inside_end(prev, token, expected):
     expects_start_inside_end_to_be_correct(prev, token, expected, IOBES)
+
+
+@pytest.mark.parametrize(
+    'prev, token, expected',
+    [
+        ('O', 'O', [False, False, False]),
+        ('O', 'I-PER', [False, False, False]),
+        ('O', 'B-PER', [True, False, False]),
+        ('O', 'L-PER', [False, False, False]),
+        ('O', 'U-PER', [True, False, False]),
+        ('I-PER', 'O', [False, False, False]),
+        ('I-PER', 'I-PER', [False, True, False]),
+        ('I-PER', 'I-ORG', [False, False, False]),
+        ('I-PER', 'B-PER', [True, False, False]),
+        ('I-PER', 'L-PER', [False, True, False]),
+        ('I-PER', 'L-ORG', [False, False, False]),
+        ('I-PER', 'U-PER', [True, False, False]),
+        ('B-PER', 'O',     [False, False, False]),
+        ('B-PER', 'I-PER', [False, True, False]),
+        ('B-PER', 'I-ORG', [False, False, False]),
+        ('B-PER', 'L-PER', [False, True, False]),
+        ('B-PER', 'L-ORG', [False, False, False]),
+        ('B-PER', 'U-PER', [True, False, False]),
+        ('L-PER', 'O', [False, False, True]),
+        ('L-PER', 'I-PER', [False, False, True]),
+        ('L-PER', 'B-PER', [True, False, True]),
+        ('L-PER', 'L-PER', [False, False, True]),
+        ('L-PER', 'U-PER', [True, False, True]),
+        ('U-PER', 'O', [False, False, True]),
+        ('U-PER', 'I-PER', [False, False, True]),
+        ('U-PER', 'B-PER', [True, False, True]),
+        ('U-PER', 'L-PER', [False, False, True]),
+        ('U-PER', 'U-PER', [True, False, True])
+    ]
+)
+def test_bilou_start_inside_end(prev, token, expected):
+    expects_start_inside_end_to_be_correct(prev, token, expected, BILOU)
 
 
 @pytest.mark.parametrize(
@@ -501,6 +538,92 @@ def test_iobes_tokens_without_tag(tokens, expected):
     assert entities == expected
 
 
+@pytest.mark.parametrize(
+    'tokens, expected',
+    [
+        (['O'], []),
+        (['I-PER'], []),
+        (['B-PER'], []),
+        (['L-PER'], []),
+        (['U-PER'], [('PER', 0, 1)]),
+        (['O', 'O'], []),
+        (['O', 'I-PER'], []),
+        (['O', 'B-PER'], []),
+        (['O', 'L-PER'], []),
+        (['O', 'U-PER'], [('PER', 1, 2)]),
+        (['I-PER', 'O'], []),
+        (['I-PER', 'I-PER'], []),
+        (['I-PER', 'I-ORG'], []),
+        (['I-PER', 'B-PER'], []),
+        (['I-PER', 'L-PER'], []),
+        (['I-PER', 'L-ORG'], []),
+        (['I-PER', 'U-PER'], [('PER', 1, 2)]),
+        (['B-PER', 'O'], []),
+        (['B-PER', 'I-PER'], []),
+        (['B-PER', 'I-ORG'], []),
+        (['B-PER', 'B-PER'], []),
+        (['B-PER', 'L-PER'], [('PER', 0, 2)]),
+        (['B-PER', 'L-ORG'], []),
+        (['B-PER', 'U-PER'], [('PER', 1, 2)]),
+        (['L-PER', 'O'], []),
+        (['L-PER', 'I-PER'], []),
+        (['L-PER', 'B-PER'], []),
+        (['L-PER', 'L-PER'], []),
+        (['L-PER', 'U-PER'], [('PER', 1, 2)]),
+        (['U-PER', 'O'], [('PER', 0, 1)]),
+        (['U-PER', 'I-PER'], [('PER', 0, 1)]),
+        (['U-PER', 'B-PER'], [('PER', 0, 1)]),
+        (['U-PER', 'L-PER'], [('PER', 0, 1)]),
+        (['U-PER', 'U-PER'], [('PER', 0, 1), ('PER', 1, 2)])
+    ]
+)
+def test_iobes_tokens(tokens, expected):
+    tokens = Tokens(tokens, BILOU)
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
+    assert entities == expected
+
+
+@pytest.mark.parametrize(
+    'tokens, expected',
+    [
+        (['O'], []),
+        (['I'], []),
+        (['B'], []),
+        (['L'], []),
+        (['U'], [('_', 0, 1)]),
+        (['O', 'O'], []),
+        (['O', 'I'], []),
+        (['O', 'B'], []),
+        (['O', 'L'], []),
+        (['O', 'U'], [('_', 1, 2)]),
+        (['I', 'O'], []),
+        (['I', 'I'], []),
+        (['I', 'B'], []),
+        (['I', 'L'], []),
+        (['I', 'U'], [('_', 1, 2)]),
+        (['B', 'O'], []),
+        (['B', 'I'], []),
+        (['B', 'B'], []),
+        (['B', 'L'], [('_', 0, 2)]),
+        (['B', 'U'], [('_', 1, 2)]),
+        (['L', 'O'], []),
+        (['L', 'I'], []),
+        (['L', 'B'], []),
+        (['L', 'L'], []),
+        (['L', 'U'], [('_', 1, 2)]),
+        (['U', 'O'], [('_', 0, 1)]),
+        (['U', 'I'], [('_', 0, 1)]),
+        (['U', 'B'], [('_', 0, 1)]),
+        (['U', 'L'], [('_', 0, 1)]),
+        (['U', 'U'], [('_', 0, 1), ('_', 1, 2)])
+    ]
+)
+def test_iobes_tokens_without_tag(tokens, expected):
+    tokens = Tokens(tokens, BILOU)
+    entities = [entity.to_tuple()[1:] for entity in tokens.entities]
+    assert entities == expected
+
+
 class TestToken:
 
     def test_raises_type_error_if_input_is_binary_string(self):
@@ -582,7 +705,16 @@ class TestAutoDetect:
             ([['B', 'E', 'S']], IOBES),
             ([['O', 'B', 'E']], IOBES),
             ([['B', 'E']], IOBES),
-            ([['S']], IOBES)
+            ([['S']], IOBES),
+            ([['I', 'O', 'B', 'L', 'U']], BILOU),
+            ([['I', 'B', 'L', 'U']], BILOU),
+            ([['I', 'O', 'B', 'L']], BILOU),
+            ([['O', 'B', 'L', 'U']], BILOU),
+            ([['I', 'B', 'L']], BILOU),
+            ([['B', 'L', 'U']], BILOU),
+            ([['O', 'B', 'L']], BILOU),
+            ([['B', 'L']], BILOU),
+            ([['U']], BILOU)
          ]
     )
     def test_valid_scheme(self, sequences, expected):
