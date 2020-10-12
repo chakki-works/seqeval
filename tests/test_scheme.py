@@ -577,7 +577,7 @@ def test_iobes_tokens_without_tag(tokens, expected):
         (['U-PER', 'U-PER'], [('PER', 0, 1), ('PER', 1, 2)])
     ]
 )
-def test_iobes_tokens(tokens, expected):
+def test_bilou_tokens(tokens, expected):
     tokens = Tokens(tokens, BILOU)
     entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
@@ -618,7 +618,7 @@ def test_iobes_tokens(tokens, expected):
         (['U', 'U'], [('_', 0, 1), ('_', 1, 2)])
     ]
 )
-def test_iobes_tokens_without_tag(tokens, expected):
+def test_bilou_tokens_without_tag(tokens, expected):
     tokens = Tokens(tokens, BILOU)
     entities = [entity.to_tuple()[1:] for entity in tokens.entities]
     assert entities == expected
