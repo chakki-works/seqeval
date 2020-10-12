@@ -6,7 +6,6 @@ import sys
 
 from setuptools import find_packages, setup
 
-
 # Package meta-data.
 NAME = 'seqeval'
 DESCRIPTION = 'Testing framework for sequence labeling'

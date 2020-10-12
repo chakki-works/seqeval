@@ -1,4 +1,5 @@
 import pytest
+
 from seqeval.reporters import DictReporter, StringReporter
 
 

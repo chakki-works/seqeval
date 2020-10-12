@@ -1,6 +1,7 @@
 import pytest
 
-from seqeval.scheme import IOB1, IOB2, IOBES, IOE1, IOE2, Prefix, Tokens, Token, auto_detect, Entity, Entities
+from seqeval.scheme import (IOB1, IOB2, IOBES, IOE1, IOE2, Entities, Entity,
+                            Prefix, Token, Tokens, auto_detect)
 
 
 def test_entity_repr():

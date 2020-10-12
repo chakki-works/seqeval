@@ -3,17 +3,15 @@ Functions named as ``*_score`` return a scalar value to maximize: the higher
 the better
 """
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 
-from collections import defaultdict
 import warnings
+from collections import defaultdict
 
 import numpy as np
 
-from seqeval.reporters import DictReporter, StringReporter
 from seqeval.metrics.v1 import classification_report as cr
+from seqeval.reporters import DictReporter, StringReporter
 
 
 def get_entities(seq, suffix=False):

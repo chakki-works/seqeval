@@ -1,5 +1,5 @@
 import warnings
-from typing import List, Union, Tuple, Type, Optional
+from typing import List, Optional, Tuple, Type, Union
 
 import numpy as np
 from sklearn.exceptions import UndefinedMetricWarning
