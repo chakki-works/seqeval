@@ -94,7 +94,8 @@ def check_consistent_length(y_true: List[List[str]], y_pred: List[List[str]]):
     len_pred = list(map(len, y_pred))
     is_list = set(map(type, y_true + y_pred))
     if len(y_true) != len(y_pred) or len_true != len_pred or not is_list == {list}:
-        raise ValueError("Found input variables with inconsistent numbers of samples:\n{}\n{}".format(len_true, len_pred))
+        message = 'Found input variables with inconsistent numbers of samples:\n{}\n{}'.format(len_true, len_pred)
+        raise ValueError(message)
 
 
 def precision_recall_fscore_support(y_true: List[List[str]],

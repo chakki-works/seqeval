@@ -15,8 +15,7 @@ class Entity:
         return '({}, {}, {}, {})'.format(self.sent_id, self.tag, self.start, self.end)
 
     def __eq__(self, other: 'Entity'):
-        return self.sent_id == other.sent_id and self.start == other.start and\
-               self.end == other.end and self.tag == other.tag
+        return self.to_tuple() == other.to_tuple()
 
     def __hash__(self):
         return hash(self.to_tuple())
