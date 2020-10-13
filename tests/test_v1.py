@@ -4,7 +4,7 @@ from sklearn.exceptions import UndefinedMetricWarning
 from sklearn.utils._testing import (assert_array_almost_equal,
                                     assert_array_equal)
 
-from seqeval.metrics.v1 import (classification_report,
+from seqeval.metrics.v1 import (check_consistent_length, classification_report,
                                 precision_recall_fscore_support, unique_labels)
 from seqeval.scheme import IOB2
 
@@ -24,6 +24,43 @@ from seqeval.scheme import IOB2
 def test_unique_labels(y_true, y_pred, expected):
     labels = unique_labels(y_true, y_pred, IOB2)
     assert labels == expected
+
+
+class TestCheckConsistentLength:
+
+    @pytest.mark.parametrize(
+        'y_true, y_pred',
+        [
+            ([[]], [[]]),
+            ([['B']], [['B']])
+        ]
+    )
+    def test_check_valid_list(self, y_true, y_pred):
+        check_consistent_length(y_true, y_pred)
+
+    @pytest.mark.parametrize(
+        'y_true, y_pred',
+        [
+            ([()], [()]),
+            (np.array([[]]), np.array([[]])),
+            (np.array([[]]), [[]])
+        ]
+    )
+    def test_check_invalid_type(self, y_true, y_pred):
+        with pytest.raises(TypeError):
+            check_consistent_length(y_true, y_pred)
+
+    @pytest.mark.parametrize(
+        'y_true, y_pred',
+        [
+            ([[]], [['B']]),
+            ([['B'], []], [['B']]),
+            ([['B'], []], [['B'], ['I']])
+        ]
+    )
+    def test_invalid_length(self, y_true, y_pred):
+        with pytest.raises(ValueError):
+            check_consistent_length(y_true, y_pred)
 
 
 class TestPrecisionRecallFscoreSupport:
@@ -100,6 +137,30 @@ class TestPrecisionRecallFscoreSupport:
 
 
 class TestClassificationReport:
+
+    @pytest.mark.parametrize(
+        'y_true, y_pred',
+        [
+            ([()], [()]),
+            (np.array([[]]), np.array([[]])),
+            (np.array([[]]), [[]])
+        ]
+    )
+    def test_check_invalid_type(self, y_true, y_pred):
+        with pytest.raises(TypeError):
+            check_consistent_length(y_true, y_pred)
+
+    @pytest.mark.parametrize(
+        'y_true, y_pred',
+        [
+            ([[]], [['B']]),
+            ([['B'], []], [['B']]),
+            ([['B'], []], [['B'], ['I']])
+        ]
+    )
+    def test_invalid_length(self, y_true, y_pred):
+        with pytest.raises(ValueError):
+            check_consistent_length(y_true, y_pred)
 
     def test_output_dict(self):
         y_true = [['B-A', 'B-B', 'O', 'B-A']]
