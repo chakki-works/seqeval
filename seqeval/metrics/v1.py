@@ -92,8 +92,11 @@ def check_consistent_length(y_true: List[List[str]], y_pred: List[List[str]]):
     """
     len_true = list(map(len, y_true))
     len_pred = list(map(len, y_pred))
-    is_list = set(map(type, y_true + y_pred))
-    if len(y_true) != len(y_pred) or len_true != len_pred or not is_list == {list}:
+    is_list = set(map(type, y_true)) | set(map(type, y_pred))
+    if not is_list == {list}:
+        raise TypeError('Found input variables without list of list.')
+
+    if len(y_true) != len(y_pred) or len_true != len_pred:
         message = 'Found input variables with inconsistent numbers of samples:\n{}\n{}'.format(len_true, len_pred)
         raise ValueError(message)
 
@@ -338,6 +341,8 @@ def classification_report(y_true: List[List[str]],
        weighted avg       0.50      0.50      0.50         2
         <BLANKLINE>
     """
+    check_consistent_length(y_true, y_pred)
+
     if scheme is None or not issubclass(scheme, Token):
         scheme = auto_detect(y_true, suffix)
     target_names = unique_labels(y_true, y_pred, scheme, suffix)
