@@ -7,11 +7,136 @@ from __future__ import absolute_import, division, print_function
 
 import warnings
 from collections import defaultdict
+from typing import List, Optional
 
 import numpy as np
 
+from seqeval.metrics.v1 import SCORES, _precision_recall_fscore_support
 from seqeval.metrics.v1 import classification_report as cr
 from seqeval.reporters import DictReporter, StringReporter
+
+
+def precision_recall_fscore_support(y_true: List[List[str]],
+                                    y_pred: List[List[str]],
+                                    *,
+                                    average: Optional[str] = None,
+                                    warn_for=('precision', 'recall', 'f-score'),
+                                    beta: float = 1.0,
+                                    sample_weight=None,
+                                    zero_division: str = 'warn',
+                                    suffix: bool = False) -> SCORES:
+    """Compute precision, recall, F-measure and support for each class.
+
+    Args:
+        y_true : 2d array. Ground truth (correct) target values.
+
+        y_pred : 2d array. Estimated targets as returned by a tagger.
+
+        beta : float, 1.0 by default
+            The strength of recall versus precision in the F-score.
+
+        average : string, [None (default), 'micro', 'macro', 'weighted']
+            If ``None``, the scores for each class are returned. Otherwise, this
+            determines the type of averaging performed on the data:
+            ``'micro'``:
+                Calculate metrics globally by counting the total true positives,
+                false negatives and false positives.
+            ``'macro'``:
+                Calculate metrics for each label, and find their unweighted
+                mean.  This does not take label imbalance into account.
+            ``'weighted'``:
+                Calculate metrics for each label, and find their average weighted
+                by support (the number of true instances for each label). This
+                alters 'macro' to account for label imbalance; it can result in an
+                F-score that is not between precision and recall.
+
+        warn_for : tuple or set, for internal use
+            This determines which warnings will be made in the case that this
+            function is being used to return only one of its metrics.
+
+        sample_weight : array-like of shape (n_samples,), default=None
+            Sample weights.
+
+        zero_division : "warn", 0 or 1, default="warn"
+            Sets the value to return when there is a zero division:
+               - recall: when there are no positive labels
+               - precision: when there are no positive predictions
+               - f-score: both
+
+            If set to "warn", this acts as 0, but warnings are also raised.
+
+        suffix : bool, False by default.
+
+    Returns:
+        precision : float (if average is not None) or array of float, shape = [n_unique_labels]
+
+        recall : float (if average is not None) or array of float, , shape = [n_unique_labels]
+
+        fbeta_score : float (if average is not None) or array of float, shape = [n_unique_labels]
+
+        support : int (if average is not None) or array of int, shape = [n_unique_labels]
+            The number of occurrences of each label in ``y_true``.
+
+    Examples:
+        >>> from seqeval.metrics.sequence_labeling import precision_recall_fscore_support
+        >>> y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
+        >>> y_pred = [['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
+        >>> precision_recall_fscore_support(y_true, y_pred, average='macro')
+        (0.5, 0.5, 0.5, 2)
+        >>> precision_recall_fscore_support(y_true, y_pred, average='micro')
+        (0.5, 0.5, 0.5, 2)
+        >>> precision_recall_fscore_support(y_true, y_pred, average='weighted')
+        (0.5, 0.5, 0.5, 2)
+
+        It is possible to compute per-label precisions, recalls, F1-scores and
+        supports instead of averaging:
+
+        >>> precision_recall_fscore_support(y_true, y_pred, average=None)
+        (array([0., 1.]), array([0., 1.]), array([0., 1.]), array([1, 1]))
+
+    Notes:
+        When ``true positive + false positive == 0``, precision is undefined;
+        When ``true positive + false negative == 0``, recall is undefined.
+        In such cases, by default the metric will be set to 0, as will f-score,
+        and ``UndefinedMetricWarning`` will be raised. This behavior can be
+        modified with ``zero_division``.
+    """
+
+    def extract_tp_actual_correct(y_true, y_pred, suffix, *args):
+        entities_true = defaultdict(set)
+        entities_pred = defaultdict(set)
+        for type_name, start, end in get_entities(y_true, suffix):
+            entities_true[type_name].add((start, end))
+        for type_name, start, end in get_entities(y_pred, suffix):
+            entities_pred[type_name].add((start, end))
+
+        target_names = sorted(set(entities_true.keys()) | set(entities_pred.keys()))
+
+        tp_sum = np.array([], dtype=np.int32)
+        pred_sum = np.array([], dtype=np.int32)
+        true_sum = np.array([], dtype=np.int32)
+        for type_name in target_names:
+            entities_true_type = entities_true.get(type_name, set())
+            entities_pred_type = entities_pred.get(type_name, set())
+            tp_sum = np.append(tp_sum, len(entities_true_type & entities_pred_type))
+            pred_sum = np.append(pred_sum, len(entities_pred_type))
+            true_sum = np.append(true_sum, len(entities_true_type))
+
+        return pred_sum, tp_sum, true_sum
+
+    precision, recall, f_score, true_sum = _precision_recall_fscore_support(
+        y_true, y_pred,
+        average=average,
+        warn_for=warn_for,
+        beta=beta,
+        sample_weight=sample_weight,
+        zero_division=zero_division,
+        scheme=None,
+        suffix=suffix,
+        extract_tp_actual_correct=extract_tp_actual_correct
+    )
+
+    return precision, recall, f_score, true_sum
 
 
 def get_entities(seq, suffix=False):
@@ -382,66 +507,41 @@ def classification_report(y_true, y_pred,
                   suffix=suffix
                   )
 
-    true_entities = set(get_entities(y_true, suffix))
-    pred_entities = set(get_entities(y_pred, suffix))
-
-    name_width = 0
-    d1 = defaultdict(set)
-    d2 = defaultdict(set)
-    for e in true_entities:
-        d1[e[0]].add((e[1], e[2]))
-        name_width = max(name_width, len(e[0]))
-    for e in pred_entities:
-        d2[e[0]].add((e[1], e[2]))
-
-    avg_types = ['micro avg', 'macro avg', 'weighted avg']
+    target_names_true = {type_name for type_name, _, _ in get_entities(y_true, suffix)}
+    target_names_pred = {type_name for type_name, _, _ in get_entities(y_pred, suffix)}
+    target_names = sorted(target_names_true | target_names_pred)
 
     if output_dict:
         reporter = DictReporter()
     else:
-        avg_width = max([len(x) for x in avg_types])
+        name_width = max(map(len, target_names))
+        avg_width = len('weighted avg')
         width = max(name_width, avg_width, digits)
         reporter = StringReporter(width=width, digits=digits)
 
-    ps, rs, f1s, s = [], [], [], []
-    for type_name in sorted(d1.keys()):
-        true_entities = d1[type_name]
-        pred_entities = d2[type_name]
-        nb_correct = len(true_entities & pred_entities)
-        nb_pred = len(pred_entities)
-        nb_true = len(true_entities)
-
-        p = nb_correct / nb_pred if nb_pred > 0 else 0
-        r = nb_correct / nb_true if nb_true > 0 else 0
-        f1 = 2 * p * r / (p + r) if p + r > 0 else 0
-
-        reporter.write(type_name, p, r, f1, nb_true)
-
-        ps.append(p)
-        rs.append(r)
-        f1s.append(f1)
-        s.append(nb_true)
-
+    # compute per-class scores.
+    p, r, f1, s = precision_recall_fscore_support(
+        y_true, y_pred,
+        average=None,
+        sample_weight=sample_weight,
+        zero_division=zero_division,
+        suffix=suffix
+    )
+    for row in zip(target_names, p, r, f1, s):
+        reporter.write(*row)
     reporter.write_blank()
 
-    nb_true = np.sum(s)
-
-    for avg_type in avg_types:
-        if avg_type == 'micro avg':
-            p = precision_score(y_true, y_pred, suffix=suffix)
-            r = recall_score(y_true, y_pred, suffix=suffix)
-            f1 = f1_score(y_true, y_pred, suffix=suffix)
-        elif avg_type == 'macro avg':
-            p = np.average(ps)
-            r = np.average(rs)
-            f1 = np.average(f1s)
-        elif avg_type == 'weighted avg':
-            p = np.average(ps, weights=s)
-            r = np.average(rs, weights=s)
-            f1 = np.average(f1s, weights=s)
-        else:
-            assert False, "unexpected average: {}".format(avg_type)
-        reporter.write(avg_type, p, r, f1, nb_true)
+    # compute average scores.
+    average_options = ('micro', 'macro', 'weighted')
+    for average in average_options:
+        avg_p, avg_r, avg_f1, support = precision_recall_fscore_support(
+            y_true, y_pred,
+            average=average,
+            sample_weight=sample_weight,
+            zero_division=zero_division,
+            suffix=suffix
+        )
+        reporter.write('{} avg'.format(average), avg_p, avg_r, avg_f1, support)
     reporter.write_blank()
 
     return reporter.report()
