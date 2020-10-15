@@ -487,7 +487,14 @@ def precision_score(y_true: List[List[str]], y_pred: List[List[str]],
     return p
 
 
-def recall_score(y_true, y_pred, average='micro', suffix=False):
+def recall_score(y_true: List[List[str]], y_pred: List[List[str]],
+                 *,
+                 average: str = 'micro',
+                 suffix: bool = False,
+                 mode: str = None,
+                 sample_weight=None,
+                 zero_division: str = 'warn',
+                 scheme: Type[Token] = None):
     """Compute the recall.
 
     The recall is the ratio ``tp / (tp + fn)`` where ``tp`` is the number of
@@ -498,27 +505,75 @@ def recall_score(y_true, y_pred, average='micro', suffix=False):
 
     Args:
         y_true : 2d array. Ground truth (correct) target values.
+
         y_pred : 2d array. Estimated targets as returned by a tagger.
+
+        average : string, [None, 'micro' (default), 'macro', 'weighted']
+            If ``None``, the scores for each class are returned. Otherwise, this
+            determines the type of averaging performed on the data:
+            ``'micro'``:
+                Calculate metrics globally by counting the total true positives,
+                false negatives and false positives.
+            ``'macro'``:
+                Calculate metrics for each label, and find their unweighted
+                mean.  This does not take label imbalance into account.
+            ``'weighted'``:
+                Calculate metrics for each label, and find their average weighted
+                by support (the number of true instances for each label). This
+                alters 'macro' to account for label imbalance; it can result in an
+                F-score that is not between precision and recall.
+
+        sample_weight : array-like of shape (n_samples,), default=None
+            Sample weights.
+
+        zero_division : "warn", 0 or 1, default="warn"
+            Sets the value to return when there is a zero division:
+               - recall: when there are no positive labels
+               - precision: when there are no positive predictions
+               - f-score: both
+
+            If set to "warn", this acts as 0, but warnings are also raised.
+
+        mode : str, [None (default), `strict`].
+            if ``None``, the score is compatible with conlleval.pl. Otherwise,
+            the score is calculated strictly.
+
+        scheme : Token, [IOB2, IOE2, IOBES]
+
+        suffix : bool, False by default.
 
     Returns:
         score : float.
 
     Example:
         >>> from seqeval.metrics import recall_score
-        >>> y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
-        >>> y_pred = [['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
-        >>> recall_score(y_true, y_pred)
-        0.50
+        >>> y_true = [['O', 'O', 'B-MISC', 'I-MISC', 'B-MISC', 'O', 'O'], ['B-PER', 'I-PER', 'O']]
+        >>> y_pred = [['O', 'O', 'B-MISC', 'I-MISC', 'B-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
+        >>> recall_score(y_true, y_pred, average=None)
+        array([0.5, 1. ])
+        >>> recall_score(y_true, y_pred, average='micro')
+        0.6666666666666666
+        >>> recall_score(y_true, y_pred, average='macro')
+        0.75
+        >>> recall_score(y_true, y_pred, average='weighted')
+        0.6666666666666666
     """
-    true_entities = set(get_entities(y_true, suffix))
-    pred_entities = set(get_entities(y_pred, suffix))
-
-    nb_correct = len(true_entities & pred_entities)
-    nb_true = len(true_entities)
-
-    score = nb_correct / nb_true if nb_true > 0 else 0
-
-    return score
+    if mode == 'strict' and scheme:
+        _, r, _, _ = precision_recall_fscore_support_v1(y_true, y_pred,
+                                                        average=average,
+                                                        warn_for=('recall',),
+                                                        sample_weight=sample_weight,
+                                                        zero_division=zero_division,
+                                                        scheme=scheme,
+                                                        suffix=suffix)
+    else:
+        _, r, _, _ = precision_recall_fscore_support(y_true, y_pred,
+                                                     average=average,
+                                                     warn_for=('recall',),
+                                                     sample_weight=sample_weight,
+                                                     zero_division=zero_division,
+                                                     suffix=suffix)
+    return r
 
 
 def performance_measure(y_true, y_pred):
