@@ -3,24 +3,93 @@ Evaluation test is performed for the following dataset.
 https://www.clips.uantwerpen.be/conll2000/chunking/output.html
 """
 import os
+import pytest
 import random
 import subprocess
 import unittest
 
+import numpy as np
 from seqeval.metrics import (accuracy_score, classification_report, f1_score,
                              performance_measure, precision_score,
                              recall_score)
 from seqeval.metrics.sequence_labeling import get_entities
+from seqeval.scheme import IOB2
+from sklearn.exceptions import UndefinedMetricWarning
+
+
+class TestF1score:
+
+    @pytest.mark.parametrize(
+        'mode, scheme',
+        [
+            (None, None),
+            ('strict', IOB2),
+        ]
+    )
+    def test_undefined_metric_warning(self, mode, scheme):
+        with pytest.warns(UndefinedMetricWarning):
+            f1_score([[]], [[]], average='micro', mode=mode, scheme=scheme)
+
+    @pytest.mark.parametrize(
+        'mode, scheme',
+        [
+            (None, None),
+            ('strict', IOB2)
+        ]
+    )
+    def test_runtime_warning(self, mode, scheme):
+        with pytest.warns(RuntimeWarning):
+            f1_score([[]], [[]], average='macro', mode=mode, scheme=scheme)
+
+    @pytest.mark.parametrize(
+        'y_true, y_pred',
+        [
+            ([['O']], [[]]),
+            ([[]], [['O']])
+        ]
+    )
+    def test_value_error(self, y_true, y_pred):
+        with pytest.raises(ValueError):
+            f1_score(y_true, y_pred)
+
+    @pytest.mark.parametrize(
+        'average, expected',
+        [
+            (None, np.array([1])),
+            ('micro', 1),
+            ('macro', 1),
+            ('weighted', 1)
+        ]
+    )
+    def test_conll_f1score(self, average, expected):
+        y_true = [['B-ORG', 'I-ORG']]
+        y_pred = [['I-ORG', 'I-ORG']]
+        f = f1_score(y_true, y_pred, average=average)
+        assert f == expected
+
+    @pytest.mark.parametrize(
+        'average, expected',
+        [
+            (None, np.array([0])),
+            ('micro', 0),
+            ('macro', 0),
+            ('weighted', 0)
+        ]
+    )
+    def test_strict_f1score(self, average, expected):
+        y_true = [['B-ORG', 'I-ORG']]
+        y_pred = [['I-ORG', 'I-ORG']]
+        f = f1_score(y_true, y_pred, average=average, mode='strict', scheme=IOB2)
+        assert f == expected
 
 
 class TestMetrics(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        cls.file_name = os.path.join(os.path.dirname(__file__), 'data/ground_truth.txt')
-        cls.y_true, cls.y_pred = cls.load_labels(cls, cls.file_name)
-        cls.inv_file_name = os.path.join(os.path.dirname(__file__), 'data/ground_truth_inv.txt')
-        cls.y_true_inv, cls.y_pred_inv = cls.load_labels(cls, cls.inv_file_name)
+    def setUp(self):
+        self.file_name = os.path.join(os.path.dirname(__file__), 'data/ground_truth.txt')
+        self.y_true, self.y_pred = self.load_labels(self.file_name)
+        self.inv_file_name = os.path.join(os.path.dirname(__file__), 'data/ground_truth_inv.txt')
+        self.y_true_inv, self.y_pred_inv = self.load_labels(self.inv_file_name)
 
     def test_get_entities(self):
         y_true = ['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O', 'B-PER', 'I-PER']
