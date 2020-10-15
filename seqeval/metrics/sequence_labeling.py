@@ -13,7 +13,8 @@ import numpy as np
 
 from seqeval.metrics.v1 import SCORES, _precision_recall_fscore_support
 from seqeval.metrics.v1 import classification_report as cr
-from seqeval.metrics.v1 import precision_recall_fscore_support as precision_recall_fscore_support_v1
+from seqeval.metrics.v1 import \
+    precision_recall_fscore_support as precision_recall_fscore_support_v1
 from seqeval.reporters import DictReporter, StringReporter
 from seqeval.scheme import Token
 
@@ -24,7 +25,7 @@ def precision_recall_fscore_support(y_true: List[List[str]],
                                     average: Optional[str] = None,
                                     warn_for=('precision', 'recall', 'f-score'),
                                     beta: float = 1.0,
-                                    sample_weight=None,
+                                    sample_weight: Optional[List[int]] = None,
                                     zero_division: str = 'warn',
                                     suffix: bool = False) -> SCORES:
     """Compute precision, recall, F-measure and support for each class.
@@ -275,12 +276,12 @@ def start_of_chunk(prev_tag, tag, prev_type, type_):
 
 def f1_score(y_true: List[List[str]], y_pred: List[List[str]],
              *,
-             average: str = 'micro',
+             average: Optional[str] = 'micro',
              suffix: bool = False,
-             mode: str = None,
-             sample_weight=None,
+             mode: Optional[str] = None,
+             sample_weight: Optional[List[int]] = None,
              zero_division: str = 'warn',
-             scheme: Type[Token] = None):
+             scheme: Optional[Type[Token]] = None):
     """Compute the F1 score.
 
     The F1 score can be interpreted as a weighted average of the precision and
@@ -400,12 +401,12 @@ def accuracy_score(y_true, y_pred):
 
 def precision_score(y_true: List[List[str]], y_pred: List[List[str]],
                     *,
-                    average: str = 'micro',
+                    average: Optional[str] = 'micro',
                     suffix: bool = False,
-                    mode: str = None,
-                    sample_weight=None,
+                    mode: Optional[str] = None,
+                    sample_weight: Optional[List[int]] = None,
                     zero_division: str = 'warn',
-                    scheme: Type[Token] = None):
+                    scheme: Optional[Type[Token]] = None):
     """Compute the precision.
 
     The precision is the ratio ``tp / (tp + fp)`` where ``tp`` is the number of
@@ -489,12 +490,12 @@ def precision_score(y_true: List[List[str]], y_pred: List[List[str]],
 
 def recall_score(y_true: List[List[str]], y_pred: List[List[str]],
                  *,
-                 average: str = 'micro',
+                 average: Optional[str] = 'micro',
                  suffix: bool = False,
-                 mode: str = None,
-                 sample_weight=None,
+                 mode: Optional[str] = None,
+                 sample_weight: Optional[List[int]] = None,
                  zero_division: str = 'warn',
-                 scheme: Type[Token] = None):
+                 scheme: Optional[Type[Token]] = None):
     """Compute the recall.
 
     The recall is the ratio ``tp / (tp + fn)`` where ``tp`` is the number of
