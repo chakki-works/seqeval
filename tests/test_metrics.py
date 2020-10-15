@@ -3,18 +3,19 @@ Evaluation test is performed for the following dataset.
 https://www.clips.uantwerpen.be/conll2000/chunking/output.html
 """
 import os
-import pytest
 import random
 import subprocess
 import unittest
 
 import numpy as np
+import pytest
+from sklearn.exceptions import UndefinedMetricWarning
+
 from seqeval.metrics import (accuracy_score, classification_report, f1_score,
                              performance_measure, precision_score,
                              recall_score)
 from seqeval.metrics.sequence_labeling import get_entities
 from seqeval.scheme import IOB2
-from sklearn.exceptions import UndefinedMetricWarning
 
 
 class TestF1score:
