@@ -1,5 +1,5 @@
 import warnings
-from typing import List, Optional, Tuple, Type, Union
+from typing import Callable, List, Optional, Tuple, Type, Union
 
 import numpy as np
 from sklearn.exceptions import UndefinedMetricWarning
@@ -101,15 +101,112 @@ def check_consistent_length(y_true: List[List[str]], y_pred: List[List[str]]):
         raise ValueError(message)
 
 
+def _precision_recall_fscore_support(y_true: List[List[str]],
+                                     y_pred: List[List[str]],
+                                     *,
+                                     average: Optional[str] = None,
+                                     warn_for=('precision', 'recall', 'f-score'),
+                                     beta: float = 1.0,
+                                     sample_weight: Optional[List[int]] = None,
+                                     zero_division: str = 'warn',
+                                     scheme: Optional[Type[Token]] = None,
+                                     suffix: bool = False,
+                                     extract_tp_actual_correct: Callable = None) -> SCORES:
+    if beta < 0:
+        raise ValueError('beta should be >=0 in the F-beta score')
+
+    average_options = (None, 'micro', 'macro', 'weighted')
+    if average not in average_options:
+        raise ValueError('average has to be one of {}'.format(average_options))
+
+    check_consistent_length(y_true, y_pred)
+
+    pred_sum, tp_sum, true_sum = extract_tp_actual_correct(y_true, y_pred, suffix, scheme)
+
+    if average == 'micro':
+        tp_sum = np.array([tp_sum.sum()])
+        pred_sum = np.array([pred_sum.sum()])
+        true_sum = np.array([true_sum.sum()])
+
+    # Finally, we have all our sufficient statistics. Divide! #
+    beta2 = beta ** 2
+
+    # Divide, and on zero-division, set scores and/or warn according to
+    # zero_division:
+    precision = _prf_divide(
+        numerator=tp_sum,
+        denominator=pred_sum,
+        metric='precision',
+        modifier='predicted',
+        average=average,
+        warn_for=warn_for,
+        zero_division=zero_division
+    )
+    recall = _prf_divide(
+        numerator=tp_sum,
+        denominator=true_sum,
+        metric='recall',
+        modifier='true',
+        average=average,
+        warn_for=warn_for,
+        zero_division=zero_division
+    )
+
+    # warn for f-score only if zero_division is warn, it is in warn_for
+    # and BOTH prec and rec are ill-defined
+    if zero_division == 'warn' and ('f-score',) == warn_for:
+        if (pred_sum[true_sum == 0] == 0).any():
+            _warn_prf(
+                average, 'true nor predicted', 'F-score is', len(true_sum)
+            )
+
+    # if tp == 0 F will be 1 only if all predictions are zero, all labels are
+    # zero, and zero_division=1. In all other case, 0
+    if np.isposinf(beta):
+        f_score = recall
+    else:
+        denom = beta2 * precision + recall
+
+        denom[denom == 0.] = 1  # avoid division by 0
+        f_score = (1 + beta2) * precision * recall / denom
+
+    # Average the results
+    if average == 'weighted':
+        weights = true_sum
+        if weights.sum() == 0:
+            zero_division_value = 0.0 if zero_division in ['warn', 0] else 1.0
+            # precision is zero_division if there are no positive predictions
+            # recall is zero_division if there are no positive labels
+            # fscore is zero_division if all labels AND predictions are
+            # negative
+            return (zero_division_value if pred_sum.sum() == 0 else 0.0,
+                    zero_division_value,
+                    zero_division_value if pred_sum.sum() == 0 else 0.0,
+                    sum(true_sum))
+
+    elif average == 'samples':
+        weights = sample_weight
+    else:
+        weights = None
+
+    if average is not None:
+        precision = np.average(precision, weights=weights)
+        recall = np.average(recall, weights=weights)
+        f_score = np.average(f_score, weights=weights)
+        true_sum = sum(true_sum)
+
+    return precision, recall, f_score, true_sum
+
+
 def precision_recall_fscore_support(y_true: List[List[str]],
                                     y_pred: List[List[str]],
                                     *,
                                     average: Optional[str] = None,
                                     warn_for=('precision', 'recall', 'f-score'),
                                     beta: float = 1.0,
-                                    sample_weight=None,
+                                    sample_weight: Optional[List[int]] = None,
                                     zero_division: str = 'warn',
-                                    scheme: Type[Token] = None,
+                                    scheme: Optional[Type[Token]] = None,
                                     suffix: bool = False) -> SCORES:
     """Compute precision, recall, F-measure and support for each class.
 
@@ -190,100 +287,34 @@ def precision_recall_fscore_support(y_true: List[List[str]],
         and ``UndefinedMetricWarning`` will be raised. This behavior can be
         modified with ``zero_division``.
     """
-    if beta < 0:
-        raise ValueError('beta should be >=0 in the F-beta score')
+    def extract_tp_actual_correct(y_true, y_pred, suffix, scheme):
+        target_names = unique_labels(y_true, y_pred, scheme, suffix)
+        entities_true = Entities(y_true, scheme, suffix)
+        entities_pred = Entities(y_pred, scheme, suffix)
 
-    average_options = (None, 'micro', 'macro', 'weighted')
-    if average not in average_options:
-        raise ValueError('average has to be one of {}'.format(average_options))
+        tp_sum = np.array([], dtype=np.int32)
+        pred_sum = np.array([], dtype=np.int32)
+        true_sum = np.array([], dtype=np.int32)
+        for type_name in target_names:
+            entities_true_type = entities_true.filter(type_name)
+            entities_pred_type = entities_pred.filter(type_name)
+            tp_sum = np.append(tp_sum, len(entities_true_type & entities_pred_type))
+            pred_sum = np.append(pred_sum, len(entities_pred_type))
+            true_sum = np.append(true_sum, len(entities_true_type))
 
-    check_consistent_length(y_true, y_pred)
+        return pred_sum, tp_sum, true_sum
 
-    target_names = unique_labels(y_true, y_pred, scheme, suffix)
-    entities_true = Entities(y_true, scheme, suffix)
-    entities_pred = Entities(y_pred, scheme, suffix)
-
-    tp_sum = np.array([], dtype=np.int32)
-    pred_sum = np.array([], dtype=np.int32)
-    true_sum = np.array([], dtype=np.int32)
-    for type_name in target_names:
-        entities_true_type = entities_true.filter(type_name)
-        entities_pred_type = entities_pred.filter(type_name)
-        tp_sum = np.append(tp_sum, len(entities_true_type & entities_pred_type))
-        pred_sum = np.append(pred_sum, len(entities_pred_type))
-        true_sum = np.append(true_sum, len(entities_true_type))
-
-    if average == 'micro':
-        tp_sum = np.array([tp_sum.sum()])
-        pred_sum = np.array([pred_sum.sum()])
-        true_sum = np.array([true_sum.sum()])
-
-    # Finally, we have all our sufficient statistics. Divide! #
-    beta2 = beta ** 2
-
-    # Divide, and on zero-division, set scores and/or warn according to
-    # zero_division:
-    precision = _prf_divide(
-        numerator=tp_sum,
-        denominator=pred_sum,
-        metric='precision',
-        modifier='predicted',
+    precision, recall, f_score, true_sum = _precision_recall_fscore_support(
+        y_true, y_pred,
         average=average,
         warn_for=warn_for,
-        zero_division=zero_division
+        beta=beta,
+        sample_weight=sample_weight,
+        zero_division=zero_division,
+        scheme=scheme,
+        suffix=suffix,
+        extract_tp_actual_correct=extract_tp_actual_correct
     )
-    recall = _prf_divide(
-        numerator=tp_sum,
-        denominator=true_sum,
-        metric='recall',
-        modifier='true',
-        average=average,
-        warn_for=warn_for,
-        zero_division=zero_division
-    )
-
-    # warn for f-score only if zero_division is warn, it is in warn_for
-    # and BOTH prec and rec are ill-defined
-    if zero_division == 'warn' and ('f-score',) == warn_for:
-        if (pred_sum[true_sum == 0] == 0).any():
-            _warn_prf(
-                average, 'true nor predicted', 'F-score is', len(true_sum)
-            )
-
-    # if tp == 0 F will be 1 only if all predictions are zero, all labels are
-    # zero, and zero_division=1. In all other case, 0
-    if np.isposinf(beta):
-        f_score = recall
-    else:
-        denom = beta2 * precision + recall
-
-        denom[denom == 0.] = 1  # avoid division by 0
-        f_score = (1 + beta2) * precision * recall / denom
-
-    # Average the results
-    if average == 'weighted':
-        weights = true_sum
-        if weights.sum() == 0:
-            zero_division_value = 0.0 if zero_division in ['warn', 0] else 1.0
-            # precision is zero_division if there are no positive predictions
-            # recall is zero_division if there are no positive labels
-            # fscore is zero_division if all labels AND predictions are
-            # negative
-            return (zero_division_value if pred_sum.sum() == 0 else 0.0,
-                    zero_division_value,
-                    zero_division_value if pred_sum.sum() == 0 else 0.0,
-                    sum(true_sum))
-
-    elif average == 'samples':
-        weights = sample_weight
-    else:
-        weights = None
-
-    if average is not None:
-        precision = np.average(precision, weights=weights)
-        recall = np.average(recall, weights=weights)
-        f_score = np.average(f_score, weights=weights)
-        true_sum = sum(true_sum)
 
     return precision, recall, f_score, true_sum
 
@@ -291,7 +322,7 @@ def precision_recall_fscore_support(y_true: List[List[str]],
 def classification_report(y_true: List[List[str]],
                           y_pred: List[List[str]],
                           *,
-                          sample_weight=None,
+                          sample_weight: Optional[List[int]] = None,
                           digits: int = 2,
                           output_dict: bool = False,
                           zero_division: str = 'warn',
