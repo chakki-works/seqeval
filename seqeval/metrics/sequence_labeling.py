@@ -629,7 +629,9 @@ def classification_report(y_true, y_pred,
 
         output_dict : bool(default=False). If True, return output as dict else str.
 
-        mode : str. If mode="strict", use new classification_report.
+        mode : str, [None (default), `strict`].
+            if ``None``, the score is compatible with conlleval.pl. Otherwise,
+            the score is calculated strictly.
 
         sample_weight : array-like of shape (n_samples,), default=None
             Sample weights.
