@@ -8,16 +8,16 @@ which can be used for measuring the performance of a system that has processed t
 
 ## Support features
 
-seqeval supports following formats:
+seqeval supports following schemes:
 
 - IOB1
 - IOB2
 - IOE1
 - IOE2
-- IOBES
-- BILOU
+- IOBES(only in strict mode)
+- BILOU(only in strict mode)
 
-and supports following metrics:
+and following metrics:
 
 | metrics  | description  |
 |---|---|
@@ -29,20 +29,21 @@ and supports following metrics:
 
 ## Usage
 
-Behold, the power of seqeval:
+seqeval supports the two evaluation modes. You can specify the following mode to each metrics:
+
+- default
+- strict
+
+The default mode is compatible with [conlleval](https://www.clips.uantwerpen.be/conll2002/ner/bin/conlleval.txt). If you want to use the default mode, you don't need to specify it:
 
 ```python
 >>> from seqeval.metrics import accuracy_score
 >>> from seqeval.metrics import classification_report
 >>> from seqeval.metrics import f1_score
->>> 
 >>> y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
 >>> y_pred = [['O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
->>>
 >>> f1_score(y_true, y_pred)
 0.50
->>> accuracy_score(y_true, y_pred)
-0.80
 >>> classification_report(y_true, y_pred)
               precision    recall  f1-score   support
 
@@ -54,10 +55,10 @@ Behold, the power of seqeval:
 weighted avg       0.50      0.50      0.50         2
 ```
 
-If you want to explicitly specify the evaluation scheme, use `mode='strict'`:
+In strict mode, the inputs are evaluated according to the specified schema. The behavior of the strict mode is different from the default one which is designed to simulate conlleval. If you want to use the strict mode, please specify `mode='strict'` and `scheme` arguments at the same time:
 
 ```python
->>> from seqeval.scheme import IOB2, IOBES, BILOU
+>>> from seqeval.scheme import IOB2
 >>> classification_report(y_true, y_pred, mode='strict', scheme=IOB2)
               precision    recall  f1-score   support
 
@@ -69,11 +70,35 @@ If you want to explicitly specify the evaluation scheme, use `mode='strict'`:
 weighted avg       0.50      0.50      0.50         2
 ```
 
-Note: The behavior of the strict mode is different from the default one which is designed to simulate conlleval.
+A minimum case to explain differences between the default and strict mode:
+
+```python
+>>> from seqeval.metrics import classification_report
+>>> from seqeval.scheme import IOB2
+>>> y_true = [['B-NP', 'I-NP', 'O']]
+>>> y_pred = [['I-NP', 'I-NP', 'O']]
+>>> classification_report(y_true, y_pred)
+              precision    recall  f1-score   support
+          NP       1.00      1.00      1.00         1
+   micro avg       1.00      1.00      1.00         1
+   macro avg       1.00      1.00      1.00         1
+weighted avg       1.00      1.00      1.00         1
+>>> classification_report(y_true, y_pred, mode='strict', scheme=IOB2)
+              precision    recall  f1-score   support
+          NP       0.00      0.00      0.00         1
+   micro avg       0.00      0.00      0.00         1
+   macro avg       0.00      0.00      0.00         1
+weighted avg       0.00      0.00      0.00         1
+```
 
 ## Installation
+
 To install seqeval, simply run:
 
+```bash
+pip install seqeval
 ```
-$ pip install seqeval
-```
+
+## License
+
+[MIT](https://github.com/chakki-works/seqeval/blob/master/LICENSE)
