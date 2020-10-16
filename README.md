@@ -102,3 +102,15 @@ pip install seqeval
 ## License
 
 [MIT](https://github.com/chakki-works/seqeval/blob/master/LICENSE)
+
+## Citation
+
+```tex
+@misc{seqeval,
+  title={{seqeval}: A Python framework for sequence labeling evaluation},
+  url={https://github.com/chakki-works/seqeval},
+  note={Software available from https://github.com/chakki-works/seqeval},
+  author={Hiroki Nakayama},
+  year={2018},
+}
+```
