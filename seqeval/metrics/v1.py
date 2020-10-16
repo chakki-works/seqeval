@@ -288,9 +288,9 @@ def precision_recall_fscore_support(y_true: List[List[str]],
         modified with ``zero_division``.
     """
     def extract_tp_actual_correct(y_true, y_pred, suffix, scheme):
-        target_names = unique_labels(y_true, y_pred, scheme, suffix)
         entities_true = Entities(y_true, scheme, suffix)
         entities_pred = Entities(y_pred, scheme, suffix)
+        target_names = sorted(entities_true.unique_tags | entities_pred.unique_tags)
 
         tp_sum = np.array([], dtype=np.int32)
         pred_sum = np.array([], dtype=np.int32)
