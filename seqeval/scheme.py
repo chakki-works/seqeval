@@ -229,9 +229,9 @@ class Tokens:
 
     def __init__(self, tokens: List[str], scheme: Type[Token],
                  suffix: bool = False, delimiter: str = '-', sent_id: int = None):
-        self.tokens = [scheme(token, suffix=suffix, delimiter=delimiter) for token in tokens]
-        self.scheme = scheme
         self.outside_token = scheme('O', suffix=suffix, delimiter=delimiter)
+        self.tokens = [scheme(token, suffix=suffix, delimiter=delimiter) for token in tokens]
+        self.extended_tokens = self.tokens + [self.outside_token]
         self.sent_id = sent_id
 
     @property
@@ -276,12 +276,6 @@ class Tokens:
         prev = self.extended_tokens[i - 1]
         return token.is_end(prev)
 
-    @property
-    def extended_tokens(self):
-        # append a sentinel.
-        tokens = self.tokens + [self.outside_token]
-        return tokens
-
 
 class Entities:
 
@@ -290,6 +284,7 @@ class Entities:
             Tokens(seq, scheme=scheme, suffix=suffix, delimiter=delimiter, sent_id=sent_id).entities
             for sent_id, seq in enumerate(sequences)
         ]
+        self.sequences = sequences
 
     def filter(self, tag_name: str):
         entities = {entity for entity in chain(*self.entities) if entity.tag == tag_name}
