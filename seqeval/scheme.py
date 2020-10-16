@@ -35,6 +35,9 @@ class Prefix(enum.Flag):
     ANY = I | O | B | E | S | U | L
 
 
+Prefixes = dict(Prefix.__members__)
+
+
 class Tag(enum.Flag):
     SAME = enum.auto()
     DIFF = enum.auto()
@@ -59,7 +62,7 @@ class Token:
     def prefix(self):
         """Extracts a prefix from the token."""
         prefix = self.token[-1] if self.suffix else self.token[0]
-        return Prefix[prefix]
+        return Prefixes[prefix]
 
     @property
     def tag(self):
@@ -154,7 +157,7 @@ class IOE1(Token):
 class IOB2(Token):
     allowed_prefix = Prefix.I | Prefix.O | Prefix.B
     start_patterns = {
-        (Prefix.ANY, Prefix.B, Tag.ANY)
+        (allowed_prefix, Prefix.B, Tag.ANY)
     }
     inside_patterns = {
         (Prefix.B, Prefix.I, Tag.SAME),
