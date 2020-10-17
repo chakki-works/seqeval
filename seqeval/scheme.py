@@ -145,7 +145,7 @@ class IOE1(Token):
 class IOB2(Token):
     allowed_prefix = Prefix.I | Prefix.O | Prefix.B
     start_patterns = {
-        (allowed_prefix, Prefix.B, Tag.ANY)
+        (Prefix.ANY, Prefix.B, Tag.ANY)
     }
     inside_patterns = {
         (Prefix.B, Prefix.I, Tag.SAME),
@@ -275,7 +275,6 @@ class Entities:
             Tokens(seq, scheme=scheme, suffix=suffix, delimiter=delimiter, sent_id=sent_id).entities
             for sent_id, seq in enumerate(sequences)
         ]
-        self.sequences = sequences
 
     def filter(self, tag_name: str):
         entities = {entity for entity in chain(*self.entities) if entity.tag == tag_name}
