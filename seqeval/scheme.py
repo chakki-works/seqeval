@@ -35,6 +35,9 @@ class Prefix(enum.Flag):
     ANY = I | O | B | E | S | U | L
 
 
+Prefixes = dict(Prefix.__members__)
+
+
 class Tag(enum.Flag):
     SAME = enum.auto()
     DIFF = enum.auto()
@@ -49,24 +52,12 @@ class Token:
 
     def __init__(self, token: str, suffix: bool = False, delimiter: str = '-'):
         self.token = token
-        self.suffix = suffix
-        self.delimiter = delimiter
+        self.prefix = Prefixes[token[-1]] if suffix else Prefixes[token[0]]
+        tag = token[:-1] if suffix else token[1:]
+        self.tag = tag.strip(delimiter) or '_'
 
     def __repr__(self):
         return self.token
-
-    @property
-    def prefix(self):
-        """Extracts a prefix from the token."""
-        prefix = self.token[-1] if self.suffix else self.token[0]
-        return Prefix[prefix]
-
-    @property
-    def tag(self):
-        """Extracts a tag from the token."""
-        tag = self.token[:-1] if self.suffix else self.token[1:]
-        tag = tag.strip(self.delimiter) or '_'
-        return tag
 
     def is_valid(self):
         """Check whether the prefix is allowed or not."""
@@ -229,9 +220,9 @@ class Tokens:
 
     def __init__(self, tokens: List[str], scheme: Type[Token],
                  suffix: bool = False, delimiter: str = '-', sent_id: int = None):
-        self.tokens = [scheme(token, suffix=suffix, delimiter=delimiter) for token in tokens]
-        self.scheme = scheme
         self.outside_token = scheme('O', suffix=suffix, delimiter=delimiter)
+        self.tokens = [scheme(token, suffix=suffix, delimiter=delimiter) for token in tokens]
+        self.extended_tokens = self.tokens + [self.outside_token]
         self.sent_id = sent_id
 
     @property
@@ -276,12 +267,6 @@ class Tokens:
         prev = self.extended_tokens[i - 1]
         return token.is_end(prev)
 
-    @property
-    def extended_tokens(self):
-        # append a sentinel.
-        tokens = self.tokens + [self.outside_token]
-        return tokens
-
 
 class Entities:
 
@@ -315,8 +300,8 @@ def auto_detect(sequences: List[List[str]], suffix: bool = False, delimiter: str
     error_message = 'This scheme is not supported: {}'
     for tokens in sequences:
         for token in tokens:
-            token = Token(token, suffix=suffix, delimiter=delimiter)
             try:
+                token = Token(token, suffix=suffix, delimiter=delimiter)
                 prefixes.add(token.prefix)
             except KeyError:
                 raise ValueError(error_message.format(token))

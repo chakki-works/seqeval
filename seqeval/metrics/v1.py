@@ -207,7 +207,8 @@ def precision_recall_fscore_support(y_true: List[List[str]],
                                     sample_weight: Optional[List[int]] = None,
                                     zero_division: str = 'warn',
                                     scheme: Optional[Type[Token]] = None,
-                                    suffix: bool = False) -> SCORES:
+                                    suffix: bool = False,
+                                    **kwargs) -> SCORES:
     """Compute precision, recall, F-measure and support for each class.
 
     Args:
@@ -288,9 +289,11 @@ def precision_recall_fscore_support(y_true: List[List[str]],
         modified with ``zero_division``.
     """
     def extract_tp_actual_correct(y_true, y_pred, suffix, scheme):
-        target_names = unique_labels(y_true, y_pred, scheme, suffix)
-        entities_true = Entities(y_true, scheme, suffix)
-        entities_pred = Entities(y_pred, scheme, suffix)
+        # If this function is called from classification_report,
+        # try to reuse entities to optimize the function.
+        entities_true = kwargs.get('entities_true') or Entities(y_true, scheme, suffix)
+        entities_pred = kwargs.get('entities_pred') or Entities(y_pred, scheme, suffix)
+        target_names = sorted(entities_true.unique_tags | entities_pred.unique_tags)
 
         tp_sum = np.array([], dtype=np.int32)
         pred_sum = np.array([], dtype=np.int32)
@@ -376,7 +379,10 @@ def classification_report(y_true: List[List[str]],
 
     if scheme is None or not issubclass(scheme, Token):
         scheme = auto_detect(y_true, suffix)
-    target_names = unique_labels(y_true, y_pred, scheme, suffix)
+
+    entities_true = Entities(y_true, scheme, suffix)
+    entities_pred = Entities(y_pred, scheme, suffix)
+    target_names = sorted(entities_true.unique_tags | entities_pred.unique_tags)
 
     if output_dict:
         reporter = DictReporter()
@@ -393,7 +399,9 @@ def classification_report(y_true: List[List[str]],
         sample_weight=sample_weight,
         zero_division=zero_division,
         scheme=scheme,
-        suffix=suffix
+        suffix=suffix,
+        entities_true=entities_true,
+        entities_pred=entities_pred
     )
     for row in zip(target_names, p, r, f1, s):
         reporter.write(*row)
@@ -408,7 +416,9 @@ def classification_report(y_true: List[List[str]],
             sample_weight=sample_weight,
             zero_division=zero_division,
             scheme=scheme,
-            suffix=suffix
+            suffix=suffix,
+            entities_true=entities_true,
+            entities_pred=entities_pred
         )
         reporter.write('{} avg'.format(average), avg_p, avg_r, avg_f1, support)
     reporter.write_blank()

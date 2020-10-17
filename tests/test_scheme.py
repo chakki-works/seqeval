@@ -627,22 +627,23 @@ def test_bilou_tokens_without_tag(tokens, expected):
 class TestToken:
 
     def test_raises_type_error_if_input_is_binary_string(self):
-        token = Token('I-組織'.encode('utf-8'))
-        with pytest.raises(TypeError):
-            tag = token.tag
+        with pytest.raises(KeyError):
+            token = Token('I-組織'.encode('utf-8'))
 
     def test_raises_index_error_if_input_is_empty_string(self):
-        token = Token('')
         with pytest.raises(IndexError):
-            prefix = token.prefix
+            token = Token('')
+
+    def test_representation(self):
+        token = Token('B-ORG')
+        assert 'B-ORG' == str(token)
 
 
 class TestIOB2Token:
 
     def test_invalid_prefix(self):
-        token = IOB2('T')
         with pytest.raises(KeyError):
-            prefix = token.prefix
+            token = IOB2('T')
 
 
 @pytest.mark.parametrize(
