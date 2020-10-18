@@ -23,6 +23,19 @@ class Entity:
     def to_tuple(self):
         return self.sent_id, self.tag, self.start, self.end
 
+    def match_start_offset(self, other: 'Entity'):
+        return self.start == other.start
+
+    def match_end_offset(self, other: 'Entity'):
+        return self.end == other.end
+
+    def match_partially(self, other: 'Entity'):
+        if self.match_start_offset(other) and not self.match_end_offset(other):
+            return True
+        if not self.match_start_offset(other) and self.match_end_offset(other):
+            return True
+        return False
+
 
 class Prefix(enum.Flag):
     I = enum.auto()
