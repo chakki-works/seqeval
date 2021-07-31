@@ -123,8 +123,14 @@ class TestMetrics(unittest.TestCase):
     def test_classification_report(self):
         print(classification_report(self.y_true, self.y_pred))
 
+    def test_classification_report(self):
+        print(classification_report(self.y_true, self.y_pred, partial_match=True))
+
     def test_inv_classification_report(self):
         print(classification_report(self.y_true_inv, self.y_pred_inv, suffix=True))
+
+    def test_classification_report(self):
+        print(classification_report(self.y_true_inv, self.y_pred_inv, suffix=True, partial_match=True))
 
     def test_by_ground_truth(self):
         with open(self.file_name) as f:

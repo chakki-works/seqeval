@@ -9,6 +9,7 @@ autopep8 = "*"
 flake8 = "*"
 pytest-cov = "*"
 isort = "*"
+atomicwrites="*"
 
 [packages]
 numpy = "*"

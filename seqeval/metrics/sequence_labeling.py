@@ -27,7 +27,8 @@ def precision_recall_fscore_support(y_true: List[List[str]],
                                     beta: float = 1.0,
                                     sample_weight: Optional[List[int]] = None,
                                     zero_division: str = 'warn',
-                                    suffix: bool = False) -> SCORES:
+                                    suffix: bool = False,
+                                    partial_match: bool = False) -> SCORES:
     """Compute precision, recall, F-measure and support for each class.
 
     Args:
@@ -69,6 +70,8 @@ def precision_recall_fscore_support(y_true: List[List[str]],
             If set to "warn", this acts as 0, but warnings are also raised.
 
         suffix : bool, False by default.
+
+        partial_match : bool, False by default.
 
     Returns:
         precision : float (if average is not None) or array of float, shape = [n_unique_labels]
@@ -121,9 +124,32 @@ def precision_recall_fscore_support(y_true: List[List[str]],
         for type_name in target_names:
             entities_true_type = entities_true.get(type_name, set())
             entities_pred_type = entities_pred.get(type_name, set())
-            tp_sum = np.append(tp_sum, len(entities_true_type & entities_pred_type))
-            pred_sum = np.append(pred_sum, len(entities_pred_type))
-            true_sum = np.append(true_sum, len(entities_true_type))
+            if partial_match:
+                n_sublist = len(y_true)
+                vector_size = 0
+                if entities_true_type:
+                    vector_size = max(entities_true_type)[1]
+                if entities_pred_type:
+                    vector_size = max(max(entities_pred_type)[1], vector_size)
+
+                vector_size += n_sublist
+                entities_true_vector = np.zeros(vector_size, dtype=np.bool8)
+                # fill true values
+                for star, end in entities_true_type:
+                    entities_true_vector[star:end+1] = True
+                # fill predict values
+                entities_pred_vector = np.zeros(vector_size, dtype=np.bool8)
+                for star, end in entities_pred_type:
+                    entities_pred_vector[star:end+1] = True
+
+                tp_sum = np.append(tp_sum, (entities_true_vector * entities_pred_vector).sum())
+                pred_sum = np.append(pred_sum, entities_pred_vector.sum())
+                true_sum = np.append(true_sum, entities_true_vector.sum())
+
+            else:
+                tp_sum = np.append(tp_sum, len(entities_true_type & entities_pred_type))
+                pred_sum = np.append(pred_sum, len(entities_pred_type))
+                true_sum = np.append(true_sum, len(entities_true_type))
 
         return pred_sum, tp_sum, true_sum
 
@@ -281,7 +307,8 @@ def f1_score(y_true: List[List[str]], y_pred: List[List[str]],
              mode: Optional[str] = None,
              sample_weight: Optional[List[int]] = None,
              zero_division: str = 'warn',
-             scheme: Optional[Type[Token]] = None):
+             scheme: Optional[Type[Token]] = None,
+             partial_match: bool = False):
     """Compute the F1 score.
 
     The F1 score can be interpreted as a weighted average of the precision and
@@ -330,6 +357,8 @@ def f1_score(y_true: List[List[str]], y_pred: List[List[str]],
 
         suffix : bool, False by default.
 
+        partial_match : bool, False by default.
+
     Returns:
         score : float or array of float, shape = [n_unique_labels].
 
@@ -354,7 +383,8 @@ def f1_score(y_true: List[List[str]], y_pred: List[List[str]],
                                                         sample_weight=sample_weight,
                                                         zero_division=zero_division,
                                                         scheme=scheme,
-                                                        suffix=suffix)
+                                                        suffix=suffix
+                                                        )
     else:
         _, _, f, _ = precision_recall_fscore_support(y_true, y_pred,
                                                      average=average,
@@ -362,7 +392,8 @@ def f1_score(y_true: List[List[str]], y_pred: List[List[str]],
                                                      beta=1,
                                                      sample_weight=sample_weight,
                                                      zero_division=zero_division,
-                                                     suffix=suffix)
+                                                     suffix=suffix,
+                                                     partial_match=partial_match)
     return f
 
 
@@ -406,7 +437,8 @@ def precision_score(y_true: List[List[str]], y_pred: List[List[str]],
                     mode: Optional[str] = None,
                     sample_weight: Optional[List[int]] = None,
                     zero_division: str = 'warn',
-                    scheme: Optional[Type[Token]] = None):
+                    scheme: Optional[Type[Token]] = None,
+                    partial_match: bool = False):
     """Compute the precision.
 
     The precision is the ratio ``tp / (tp + fp)`` where ``tp`` is the number of
@@ -454,6 +486,8 @@ def precision_score(y_true: List[List[str]], y_pred: List[List[str]],
 
         suffix : bool, False by default.
 
+        partial_match : bool, False by default.
+
     Returns:
         score : float or array of float, shape = [n_unique_labels].
 
@@ -484,7 +518,8 @@ def precision_score(y_true: List[List[str]], y_pred: List[List[str]],
                                                      warn_for=('precision',),
                                                      sample_weight=sample_weight,
                                                      zero_division=zero_division,
-                                                     suffix=suffix)
+                                                     suffix=suffix,
+                                                     partial_match=partial_match)
     return p
 
 
@@ -495,7 +530,8 @@ def recall_score(y_true: List[List[str]], y_pred: List[List[str]],
                  mode: Optional[str] = None,
                  sample_weight: Optional[List[int]] = None,
                  zero_division: str = 'warn',
-                 scheme: Optional[Type[Token]] = None):
+                 scheme: Optional[Type[Token]] = None,
+                 partial_match: bool = False,):
     """Compute the recall.
 
     The recall is the ratio ``tp / (tp + fn)`` where ``tp`` is the number of
@@ -543,6 +579,8 @@ def recall_score(y_true: List[List[str]], y_pred: List[List[str]],
 
         suffix : bool, False by default.
 
+        partial_match : bool, False by default.
+
     Returns:
         score : float.
 
@@ -573,7 +611,8 @@ def recall_score(y_true: List[List[str]], y_pred: List[List[str]],
                                                      warn_for=('recall',),
                                                      sample_weight=sample_weight,
                                                      zero_division=zero_division,
-                                                     suffix=suffix)
+                                                     suffix=suffix,
+                                                     partial_match=partial_match)
     return r
 
 
@@ -617,7 +656,8 @@ def classification_report(y_true, y_pred,
                           mode=None,
                           sample_weight=None,
                           zero_division='warn',
-                          scheme=None):
+                          scheme=None,
+                          partial_match: bool = False):
     """Build a text report showing the main classification metrics.
 
     Args:
@@ -647,6 +687,8 @@ def classification_report(y_true, y_pred,
         scheme : Token, [IOB2, IOE2, IOBES]
 
         suffix : bool, False by default.
+
+        partial_match : bool, False by default.
 
     Returns:
         report : string/dict. Summary of the precision, recall, F1 score for each class.
@@ -694,7 +736,8 @@ def classification_report(y_true, y_pred,
         average=None,
         sample_weight=sample_weight,
         zero_division=zero_division,
-        suffix=suffix
+        suffix=suffix,
+        partial_match=partial_match,
     )
     for row in zip(target_names, p, r, f1, s):
         reporter.write(*row)
@@ -708,7 +751,8 @@ def classification_report(y_true, y_pred,
             average=average,
             sample_weight=sample_weight,
             zero_division=zero_division,
-            suffix=suffix
+            suffix=suffix,
+            partial_match=partial_match
         )
         reporter.write('{} avg'.format(average), avg_p, avg_r, avg_f1, support)
     reporter.write_blank()
