@@ -136,11 +136,11 @@ def precision_recall_fscore_support(y_true: List[List[str]],
                 entities_true_vector = np.zeros(vector_size, dtype=np.bool8)
                 # fill true values
                 for star, end in entities_true_type:
-                    entities_true_vector[star:end+1] = True
+                    entities_true_vector[star:end + 1] = True
                 # fill predict values
                 entities_pred_vector = np.zeros(vector_size, dtype=np.bool8)
                 for star, end in entities_pred_type:
-                    entities_pred_vector[star:end+1] = True
+                    entities_pred_vector[star:end + 1] = True
 
                 tp_sum = np.append(tp_sum, (entities_true_vector * entities_pred_vector).sum())
                 pred_sum = np.append(pred_sum, entities_pred_vector.sum())
