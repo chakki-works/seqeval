@@ -70,6 +70,21 @@ In strict mode, the inputs are evaluated according to the specified schema. The 
 weighted avg       0.50      0.50      0.50         2
 ```
 
+With the partial match, the inputs are evaluated according the number of tags. It isn't compatible with strict mode.
+```python
+print(classification_report(y_true, y_pred, partial_match=True))
+
+              precision    recall  f1-score   support
+
+        MISC       0.75      1.00      0.86         3
+         PER       1.00      1.00      1.00         2
+
+   micro avg       0.83      1.00      0.91         5
+   macro avg       0.88      1.00      0.93         5
+weighted avg       0.85      1.00      0.91         5
+```
+
+
 A minimum case to explain differences between the default and strict mode:
 
 ```python
