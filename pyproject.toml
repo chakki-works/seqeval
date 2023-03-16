@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "seqeval"
+authors = [
+    {name = "Hironsan", email = "hiroki.nakayama.py@gmail.com"},
+]
+description = "Testing framework for sequence labeling"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+classifiers = [
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: Implementation :: CPython",
+        "Programming Language :: Python :: Implementation :: PyPy"
+]
+dependencies = ["numpy>=1.14.0", "scikit-learn>=0.21.3"]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+dev = ["pytest", "autopep8", "flake8", "pytest-cov", "isort"]
+
+[project.scripts]
