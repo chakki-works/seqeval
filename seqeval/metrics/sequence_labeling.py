@@ -281,7 +281,8 @@ def f1_score(y_true: List[List[str]], y_pred: List[List[str]],
              mode: Optional[str] = None,
              sample_weight: Optional[List[int]] = None,
              zero_division: str = 'warn',
-             scheme: Optional[Type[Token]] = None):
+             scheme: Optional[Type[Token]] = None, 
+             beta: float = 1.0):
     """Compute the F1 score.
 
     The F1 score can be interpreted as a weighted average of the precision and
@@ -329,6 +330,9 @@ def f1_score(y_true: List[List[str]], y_pred: List[List[str]],
         scheme : Token, [IOB2, IOE2, IOBES]
 
         suffix : bool, False by default.
+        
+        beta : float, 1.0 by default
+            The strength of recall versus precision in the F-score.
 
     Returns:
         score : float or array of float, shape = [n_unique_labels].
@@ -350,7 +354,7 @@ def f1_score(y_true: List[List[str]], y_pred: List[List[str]],
         _, _, f, _ = precision_recall_fscore_support_v1(y_true, y_pred,
                                                         average=average,
                                                         warn_for=('f-score',),
-                                                        beta=1,
+                                                        beta=beta,
                                                         sample_weight=sample_weight,
                                                         zero_division=zero_division,
                                                         scheme=scheme,
@@ -359,7 +363,7 @@ def f1_score(y_true: List[List[str]], y_pred: List[List[str]],
         _, _, f, _ = precision_recall_fscore_support(y_true, y_pred,
                                                      average=average,
                                                      warn_for=('f-score',),
-                                                     beta=1,
+                                                     beta=beta,
                                                      sample_weight=sample_weight,
                                                      zero_division=zero_division,
                                                      suffix=suffix)
