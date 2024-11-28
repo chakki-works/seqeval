@@ -27,3 +27,6 @@ jobs:
     - name: Test with pytest
       run: |
         pipenv run test
+    - name: Test package build and install
+      run: |
+        pip install .

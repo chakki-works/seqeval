@@ -19,15 +19,13 @@ with io.open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = '\n' + f.read()
 
 if sys.argv[-1] == 'publish':
-    os.system('python setup.py sdist bdist_wheel upload')
-    sys.exit()
+    sys.exit("After running `pipenv install --dev`, you can use `pipenv run publish` instead.")
 
 required = ['numpy>=1.14.0', 'scikit-learn>=0.21.3']
 
 setup(
     name=NAME,
     use_scm_version=True,
-    setup_requires=['setuptools_scm'],
     description=DESCRIPTION,
     long_description=long_description,
     long_description_content_type='text/markdown',

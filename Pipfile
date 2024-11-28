@@ -10,6 +10,11 @@ flake8 = "*"
 pytest-cov = "*"
 isort = "*"
 
+# For `publish` script.
+build = "*"
+twine = "*"
+setuptools_scm = "*"
+
 [packages]
 numpy = "*"
 scikit-learn = "*"
@@ -21,3 +26,4 @@ python_version = "3.8"
 isort = "isort . -c"
 test = "pytest tests/test_scheme.py tests/test_reporters.py tests/test_v1.py --cov=seqeval --cov-report=term-missing -vv"
 flake8 = "flake8 seqeval --ignore=F401,E741"
+publish = "python scripts/publish.py"
