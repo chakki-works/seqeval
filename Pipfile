@@ -19,5 +19,5 @@ python_version = "3.8"
 
 [scripts]
 isort = "isort . -c"
-test = "pytest tests/test_scheme.py tests/test_reporters.py tests/test_v1.py --cov=seqeval --cov-report=term-missing -vv"
+test = "pytest tests/test_scheme.py tests/test_reporters.py tests/test_v1.py tests/test_token_metrics.py --cov=seqeval --cov-report=term-missing -vv"
 flake8 = "flake8 seqeval --ignore=F401,E741"
