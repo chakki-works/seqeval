@@ -7,11 +7,13 @@ from __future__ import absolute_import, division, print_function
 
 import warnings
 from collections import defaultdict
+from itertools import chain
 from typing import List, Optional, Type
 
 import numpy as np
 
-from seqeval.metrics.v1 import SCORES, _precision_recall_fscore_support
+from seqeval.metrics.v1 import (SCORES, _precision_recall_fscore_support,
+                                check_consistent_length)
 from seqeval.metrics.v1 import classification_report as cr
 from seqeval.metrics.v1 import \
     precision_recall_fscore_support as precision_recall_fscore_support_v1
@@ -366,6 +368,18 @@ def f1_score(y_true: List[List[str]], y_pred: List[List[str]],
     return f
 
 
+def _flatten_token_labels(y_true, y_pred):
+    """Check that labels align before removing sentence boundaries."""
+    if any(isinstance(seq, list) for seq in chain(y_true, y_pred)):
+        check_consistent_length(y_true, y_pred)
+        return (list(chain.from_iterable(y_true)),
+                list(chain.from_iterable(y_pred)))
+    if len(y_true) != len(y_pred):
+        raise ValueError('Found input variables with inconsistent numbers of samples: {} and {}'.format(
+            len(y_true), len(y_pred)))
+    return y_true, y_pred
+
+
 def accuracy_score(y_true, y_pred):
     """Accuracy classification score.
 
@@ -380,6 +394,9 @@ def accuracy_score(y_true, y_pred):
     Returns:
         score : float.
 
+    Raises:
+        ValueError: If the numbers of sequences or labels per sequence differ.
+
     Example:
         >>> from seqeval.metrics import accuracy_score
         >>> y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'I-MISC', 'O'], ['B-PER', 'I-PER', 'O']]
@@ -387,9 +404,7 @@ def accuracy_score(y_true, y_pred):
         >>> accuracy_score(y_true, y_pred)
         0.80
     """
-    if any(isinstance(s, list) for s in y_true):
-        y_true = [item for sublist in y_true for item in sublist]
-        y_pred = [item for sublist in y_pred for item in sublist]
+    y_true, y_pred = _flatten_token_labels(y_true, y_pred)
 
     nb_correct = sum(y_t == y_p for y_t, y_p in zip(y_true, y_pred))
     nb_true = len(y_true)
@@ -588,6 +603,9 @@ def performance_measure(y_true, y_pred):
     Returns:
         performance_dict : dict
 
+    Raises:
+        ValueError: If the numbers of sequences or labels per sequence differ.
+
     Example:
         >>> from seqeval.metrics import performance_measure
         >>> y_true = [['O', 'O', 'O', 'B-MISC', 'I-MISC', 'O', 'B-ORG'], ['B-PER', 'I-PER', 'O', 'B-PER']]
@@ -596,9 +614,7 @@ def performance_measure(y_true, y_pred):
         {'TP': 3, 'FP': 3, 'FN': 1, 'TN': 4}
     """
     performance_dict = dict()
-    if any(isinstance(s, list) for s in y_true):
-        y_true = [item for sublist in y_true for item in sublist]
-        y_pred = [item for sublist in y_pred for item in sublist]
+    y_true, y_pred = _flatten_token_labels(y_true, y_pred)
     performance_dict['TP'] = sum(y_t == y_p for y_t, y_p in zip(y_true, y_pred)
                                  if ((y_t != 'O') or (y_p != 'O')))
     performance_dict['FP'] = sum(((y_t != y_p) and (y_p != 'O')) for y_t, y_p in zip(y_true, y_pred))
